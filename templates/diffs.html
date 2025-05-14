@@ -1,0 +1,26 @@
+<h2>Änderungen für {{ selected_date }}</h2>
+
+{% if diff %}
+  {% if diff.get("values_changed") %}
+    <h3>Geänderte Werte</h3>
+    <table>
+      <thead>
+        <tr><th>Feld</th><th>Alt</th><th>Neu</th></tr>
+      </thead>
+      <tbody>
+        {% for k, v in diff["values_changed"].items() %}
+        <tr>
+          <td>{{ k }}</td>
+          <td>{{ v["old_value"] }}</td>
+          <td>{{ v["new_value"] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>Keine geänderten Werte.</p>
+  {% endif %}
+  <!-- Weitere Blöcke: added_items, removed_items -->
+{% else %}
+  <p>Kein Diff für dieses Datum gefunden.</p>
+{% endif %}
