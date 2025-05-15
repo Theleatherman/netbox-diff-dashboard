@@ -6,9 +6,6 @@ from emailer import send_mail
 from jinja2 import Template
 import locale
 
-# Stelle sicher, dass dein System deutsche Lokalisierung unterstützt:
-locale.setlocale(locale.LC_TIME, "de_DE.UTF-8")
-
 # Beispiel: Formatieren eines Snapshot-Timestamps
 snapshot_date = datetime.now()  # oder datetime.now()
 selected_date = snapshot_date.strftime("%d. %B %Y, %H:%M Uhr")
