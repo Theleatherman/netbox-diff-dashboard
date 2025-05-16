@@ -169,6 +169,18 @@ table.dataTable tbody td {
   }
 }
 
+.diff-block {
+  margin-bottom: 2rem;
+}
+
+.diff-block h3 {
+  margin-bottom: 0.5rem;
+}
+
+h3.added    { color: #4caf50; }
+h3.removed  { color: #f44336; }
+h3.changed  { color: #ff9800; }
+
 footer {
   margin-top: 4rem;
   padding: 1rem 0;
@@ -190,4 +202,21 @@ footer {
 
 .footer-content:hover {
   opacity: 1;
+}
+
+footer a {
+  color: #ccc;                /* Helles Grau passend zum Footer-Text */
+  text-decoration: none;     /* Kein Unterstrich */
+  transition: color 0.2s;
+}
+
+footer a:hover {
+  color: #fff;                /* Heller beim Hover */
+  text-decoration: underline;
+}
+
+nav a.active {
+  font-weight: bold;
+  color: #fff !important;
+  border-bottom: 2px solid #7e57c2;
 }

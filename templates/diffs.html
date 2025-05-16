@@ -1,26 +1,103 @@
-<h2>Änderungen für {{ selected_date }}</h2>
+{% extends "base.html" %}
+{% block content %}
 
-{% if diff %}
-  {% if diff.get("values_changed") %}
-    <h3>Geänderte Werte</h3>
-    <table>
+<div class="container mx-auto px-4 py-8">
+  <h2 class="text-white text-xl font-bold mb-4">Änderungen vom {{ readable_date }}</h2>
+
+  {% if not diff %}
+    <p class="text-green-500">✅ Keine Änderungen seit dem letzten Snapshot.</p>
+  {% else %}
+    <table id="diff-table" class="display w-full text-sm">
       <thead>
-        <tr><th>Feld</th><th>Alt</th><th>Neu</th></tr>
+        <tr>
+          <th>Typ</th>
+          <th>IP</th>
+          <th>Beschreibung</th>
+          <th>DNS</th>
+          <th>Tags</th>
+        </tr>
       </thead>
       <tbody>
-        {% for k, v in diff["values_changed"].items() %}
+        {% for ip, desc, dns, tags in diff.added %}
         <tr>
-          <td>{{ k }}</td>
-          <td>{{ v["old_value"] }}</td>
-          <td>{{ v["new_value"] }}</td>
+          <td class="text-green-400 font-bold">Hinzugefügt</td>
+          <td>{{ ip }}</td>
+          <td>{{ desc }}</td>
+          <td>{{ dns }}</td>
+          <td>{% for tag in tags %}<span class="tag tag-{{ tag | lower }}">{{ tag }}</span>{% endfor %}</td>
+        </tr>
+        {% endfor %}
+
+        {% for ip, desc, dns, tags in diff.removed %}
+        <tr>
+          <td class="text-red-400 font-bold">Entfernt</td>
+          <td>{{ ip }}</td>
+          <td>{{ desc }}</td>
+          <td>{{ dns }}</td>
+          <td>{% for tag in tags %}<span class="tag tag-{{ tag | lower }}">{{ tag }}</span>{% endfor %}</td>
+        </tr>
+        {% endfor %}
+
+        {% for ip, change in diff.changed.items() %}
+        <tr>
+          <td class="text-yellow-400 font-bold">Geändert</td>
+          <td>{{ ip }}</td>
+          <td>{{ change.description.new if change.description else "" }}</td>
+          <td>{{ change.dns_name.new if change.dns_name else "" }}</td>
+          <td>{% if change.tags %}<span class="tag tag-diff">🔁</span>{% endif %}</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
-  {% else %}
-    <p>Keine geänderten Werte.</p>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+
+    <script>
+      $(document).ready(function() {
+        $('#diff-table').DataTable({
+          pageLength: 25,
+          lengthChange: false,
+          dom: 'Bfrtip',
+          buttons: ['csv', 'excel'],
+          language: {
+            search: "🔍 Suche:",
+            paginate: { previous: "←", next: "→" },
+            info: "Zeige _START_ bis _END_ von _TOTAL_ Einträgen",
+            zeroRecords: "Keine passenden Einträge gefunden",
+            buttons: {
+              csv: "CSV",
+              excel: "Excel"
+            }
+          }
+        });
+      });
+    </script>
+
+    <style>
+      .tag {
+        display: inline-block;
+        color: #fff;
+        padding: 0.2em 0.5em;
+        border-radius: 0.4em;
+        font-size: 0.8em;
+        margin-right: 0.3em;
+      }
+      .tag-firewall { background-color: #e57373; }
+      .tag-mgmt-if  { background-color: #64b5f6; }
+      .tag-vpn      { background-color: #81c784; }
+      .tag-dmz      { background-color: #ffd54f; }
+      .tag-db       { background-color: #ba68c8; }
+      .tag-backup   { background-color: #4dd0e1; }
+      .tag-diff     { background-color: #ff9800; }
+    </style>
   {% endif %}
-  <!-- Weitere Blöcke: added_items, removed_items -->
-{% else %}
-  <p>Kein Diff für dieses Datum gefunden.</p>
-{% endif %}
+</div>
+
+{% endblock %}

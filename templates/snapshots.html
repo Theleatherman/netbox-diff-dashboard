@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mx-auto px-4 py-8">
+  <h2 class="text-white text-xl font-bold mb-4">NetBox Snapshot – Stand vom {{ readable_date }}</h2>
+
+  <div class="flex items-center space-x-4 mb-4">
+    <label for="tagFilter" class="text-white">🏷️ Tag:</label>
+    <select id="tagFilter" class="px-2 py-1 rounded text-black">
+  <option value="">Alle</option>
+  {% set seen_tags = [] %}
+  {% for tag in (data | map(attribute=3) | sum(start=[]) | unique | select('ne', 'mgmt-if') | sort) %}
+    <option value="{{ tag }}">{{ tag }}</option>
+  {% endfor %}
+</select>
+  </div>
+
+  <table id="snapshot-table" class="display w-full text-sm">
+    <thead>
+      <tr>
+        <th>IP</th>
+        <th>Beschreibung</th>
+        <th>DNS</th>
+        <th>Tags</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ip, desc, dns, tags in data %}
+      <tr>
+        <td>{{ ip }}</td>
+        <td>{{ desc }}</td>
+        <td>{{ dns }}</td>
+        <td>
+          {% for tag in tags %}
+            <span class="tag tag-{{ tag | lower }}">{{ tag }}</span>
+          {% endfor %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Scripts + CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+
+<script>
+$(document).ready(function () {
+  const table = $('#snapshot-table').DataTable({
+    pageLength: 25,
+    dom: 'Bfrtip',
+    buttons: ['csv', 'excel'],
+    language: {
+      search: "🔍 Suche:",
+      paginate: { previous: "←", next: "→" },
+      info: "Zeige _START_ bis _END_ von _TOTAL_ Einträgen",
+      zeroRecords: "Keine passenden Einträge gefunden",
+      buttons: {
+        csv: "CSV",
+        excel: "Excel"
+      }
+    }
+  });
+
+  $('#tagFilter').on('change', function () {
+    const val = $.fn.dataTable.util.escapeRegex($(this).val());
+    table.column(3).search(val ? val : '', true, false).draw();
+  });
+});
+</script>
+
+<style>
+  .tag {
+    display: inline-block;
+    color: white;
+    padding: 0.2em 0.5em;
+    border-radius: 0.4em;
+    font-size: 0.8em;
+    margin-right: 0.3em;
+  }
+  .tag-firewall { background-color: #e57373; }
+  .tag-mgmt-if  { background-color: #64b5f6; }
+  .tag-linux    { background-color: #81c784; }
+  .tag-cluster  { background-color: #ffd54f; }
+  .tag-db       { background-color: #ba68c8; }
+</style>
+
+{% endblock %}

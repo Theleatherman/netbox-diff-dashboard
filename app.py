@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 import sqlite3
 import json
 import ast
 from datetime import datetime
+from babel.dates import format_datetime as babel_format_datetime
 import locale
 import os
 
@@ -11,10 +12,6 @@ DB_PATH = "netbox.db"
 
 os.environ["LANG"] = "de_DE.UTF-8"
 os.environ["LC_ALL"] = "de_DE.UTF-8"
-
-# Beispiel: Formatieren eines Snapshot-Timestamps
-snapshot_date = datetime.now()  # oder datetime.now()
-selected_date = snapshot_date.strftime("%d. %B %Y, %H:%M Uhr")
 
 # 📦 Alle Snapshot-Daten (für Dropdown)
 def get_snapshot_dates():
@@ -56,8 +53,18 @@ def get_diff_by_date(date):
     conn.close()
     return json.loads(result[0]) if result else {}
 
+def format_datetime(iso_string):
+    try:
+        dt = datetime.fromisoformat(iso_string)
+        return babel_format_datetime(dt, format="d. MMMM yyyy, HH:mm 'Uhr'", locale="de")
+    except Exception:
+        return iso_string  # Fallback bei Fehler
+
 # 🌐 Hauptseite: Snapshot-Ansicht mit Tag-/Datum-Filter
 @app.route("/")
+def index():
+    return render_template("home.html", year=datetime.now().year, active_page="home")  # neue Auswahlseite
+
 def index():
     # hole alle vorhandenen Snapshot-Daten
     dates = get_snapshot_dates()
@@ -85,18 +92,31 @@ def index():
                            data=snapshot,
                            dates=dates,
                            selected_date=human_date,
-                           selected_tag=selected_tag)
+                           selected_tag=selected_tag,
+                           year=datetime.now().year)
 
 # 🔍 Vergleichsansicht: Änderungen als Tabelle anzeigen
 @app.route("/diffs")
 def diffs():
     dates = get_snapshot_dates()
     selected_date = request.args.get("date") or (dates[0] if dates else None)
+    readable_date = format_datetime(selected_date)
     diff_data = get_diff_by_date(selected_date)
-    return render_template("diffs.html",
-                           diff=diff_data,
+    return render_template("diffs.html", diff=diff_data, dates=dates, selected_date=selected_date, readable_date=readable_date, year=datetime.now().year, active_page="diffs")
+
+@app.route("/snapshots")
+def snapshots():
+    dates = get_snapshot_dates()
+    selected_date = request.args.get("date") or (dates[0] if dates else None)
+    snapshot = get_snapshot(selected_date) if selected_date else []
+    readable_date = format_datetime(selected_date)
+    return render_template("snapshots.html",
+                           data=snapshot,
                            dates=dates,
-                           selected_date=selected_date)
+                           selected_date=selected_date,
+                           readable_date=readable_date,
+                           year=datetime.now().year,
+                           active_page="snapshots")
 
 # 🚀 Start
 if __name__ == "__main__":
