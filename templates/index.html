@@ -36,7 +36,7 @@
     </select>
 
     <label for="datatable-search">
-        <span class="icon">🔍</span>Suche:
+        <span class="icon"><i class="fas fa-search mr-2"></i></span>Suche:
     </label>
     <input type="search" id="datatable-search" placeholder="z. B. IP, Hostname..." />
     </div>
@@ -44,10 +44,10 @@
     <table id="iptable">
     <thead>
         <tr>
-        <th>IP</th>
-        <th>Beschreibung</th>
-        <th>DNS</th>
-        <th>Tags</th>
+        <th><i class="fa-solid fa-circle-nodes"></i> IP</th>
+        <th><i class="fa-solid fa-message"></i> Beschreibung</th>
+        <th><i class="fa-solid fa-arrow-up-9-1"></i> DNS</th>
+        <th><i class="fas fa-tags mr-2"></i>Tags</th>
         </tr>
     </thead>
     <tbody>
@@ -78,11 +78,11 @@
         lengthMenu: "Zeige _MENU_ Einträge",
         info: "_START_ bis _END_ von _TOTAL_ Einträgen",
         infoFiltered: "(gefiltert aus _MAX_ Gesamt)",
-        infoEmpty: "Keine Einträge verfügbar",
-        zeroRecords: "Keine passenden Einträge gefunden",
+        infoEmpty: '<i class="fa-solid fa-xmark"></i> Keine Einträge verfügbar',
+        zeroRecords: '<i class="fa-solid fa-xmark"></i> Keine passenden Einträge gefunden',
         paginate: {
-        next: "▶",
-        previous: "◀"
+        next: '<i class="fa-solid fa-caret-right"></i>',
+        previous: '<i class="fa-solid fa-caret-left"></i>'
         }
     }
     });
@@ -105,13 +105,9 @@
 </script>
 
 </body>
-<footer>
-  <div class="footer-content">
-    <span>Made with ❤️</span>
-    <span>·</span>
-    <span><a href="https://git.avemo-it.cloud/theleatherman/">The Leatherman</a></span>
-    <span>·</span>
-    <span>sentinex GmbH</span>
-  </div>
-</footer>
+  <footer>
+    <div style="text-align: center; margin-top: 2em; font-size: 0.8em; color: #888;">
+      <i class="fa-solid fa-screwdriver-wrench"></i> Made with ❤️ · <a href="https://git.avemo-it.cloud/theleatherman/">The Leatherman</a> · &copy; {{ year }} <a href="https://www.sentinex.de/">sentinex GmbH</a>
+    </div>
+  </footer>
 </html>

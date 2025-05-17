@@ -5,16 +5,16 @@
   <h2 class="text-white text-xl font-bold mb-4">Änderungen vom {{ readable_date }}</h2>
 
   {% if not diff %}
-    <p class="text-green-500">✅ Keine Änderungen seit dem letzten Snapshot.</p>
+    <p class="text-green-500"><i class="fa-solid fa-square-check"></i> Keine Änderungen seit dem letzten Snapshot.</p>
   {% else %}
     <table id="diff-table" class="display w-full text-sm">
       <thead>
         <tr>
-          <th>Typ</th>
-          <th>IP</th>
-          <th>Beschreibung</th>
-          <th>DNS</th>
-          <th>Tags</th>
+          <th><i class="fa-solid fa-font-awesome"></i> Typ</th>
+          <th><i class="fa-solid fa-circle-nodes"></i> IP</th>
+          <th><i class="fa-solid fa-message"></i> Beschreibung</th>
+          <th><i class="fa-solid fa-arrow-up-9-1"></i> DNS</th>
+          <th><i class="fas fa-tags mr-2"></i>Tags</th>
         </tr>
       </thead>
       <tbody>
@@ -44,7 +44,7 @@
           <td>{{ ip }}</td>
           <td>{{ change.description.new if change.description else "" }}</td>
           <td>{{ change.dns_name.new if change.dns_name else "" }}</td>
-          <td>{% if change.tags %}<span class="tag tag-diff">🔁</span>{% endif %}</td>
+          <td>{% if change.tags %}<span class="tag tag-diff"><i class="fa-regular fa-share-from-square"></i> </span>{% endif %}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -70,10 +70,10 @@
             search: "🔍 Suche:",
             paginate: { previous: "←", next: "→" },
             info: "Zeige _START_ bis _END_ von _TOTAL_ Einträgen",
-            zeroRecords: "Keine passenden Einträge gefunden",
+            zeroRecords: '<i class="fa-solid fa-xmark"></i> Keine passenden Einträge gefunden',
             buttons: {
-              csv: "CSV",
-              excel: "Excel"
+              csv: '<i class="fas fa-file-csv mr-2"></i> CSV',
+              excel: '<i class="fas fa-file-excel mr-2"></i> Excel'
             }
           }
         });

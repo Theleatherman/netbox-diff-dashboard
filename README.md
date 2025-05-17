@@ -8,7 +8,7 @@ Visualisiert IP-Zustände, ermöglicht Tag-Filter, Volltextsuche, Differenzvergl
 ## 📦 Features
 
 - 🔁 **Täglicher Snapshot** aller IP-Adressen aus NetBox mit Beschreibung/DNS/Tags
-- 🕵️ **Filterung nach Tags**
+- 🕵️ **Filterung nach Tags** (dynamisch, „mgmt-if“ wird automatisch ausgeblendet)
 - 🔍 **Volltextsuche** über IP, Beschreibung & DNS
 - 📊 **DataTables-Integration** für Sortierung, Pagination & Suche
 - 🏷️ Tags in Badge-Optik, an NetBox UI angelehnt
@@ -18,6 +18,10 @@ Visualisiert IP-Zustände, ermöglicht Tag-Filter, Volltextsuche, Differenzvergl
 - 💬 Lokalisierung in Deutsch
 - 📥 SQLite-basiertes Datenlog
 - ❤️ Footer: „Made with ❤️ by The Leatherman | sentinex GmbH“
+- 📤 Exportfunktionen für CSV & Excel
+- 🧠 Snapshot-Vergleich via Web + E-Mail mit HTML-Template
+- 🧭 Navigation mit aktiver Seitenmarkierung & Font Awesome Icons
+- ✨ Pulsierender NetBox-Logoeffekt im UI (hover-responsive)
 
 ---
 
@@ -29,15 +33,21 @@ netbox-ip-diff-dashboard/
 ├── app.py                     # Flask-Frontend für Snapshot-Ansicht & Diff
 ├── daily.py                  # täglicher NetBox-API-Abzug (Cron geeignet)
 ├── netbox.py                 # API-Abfrage-Logik
+├── emailer.py                # HTML-E-Mail-Versand für Snapshot-Diffs
 ├── netbox.db                 # SQLite-DB mit Snapshots & Diffs
 │
 ├── templates/
 │   ├── index.html            # Snapshot-Webansicht
-│   └── diffs.html            # Diff-Webansicht
+│   ├── diffs.html            # Änderungsansicht (Diffs)
+│   ├── snapshots.html        # Rohdaten-Tabellenansicht
+│   ├── home.html             # Startseite mit Logo & Navigation
+│   └── base.html             # zentrales Layout inkl. Navigation
 │
 ├── static/
-│   ├── sentinex.css          # zentrales UI/CSS-Theme
-│   └── logo-sentinex.svg     # Firmenlogo
+│   ├── sentinex.css          # zentrales UI/CSS-Theme inkl. Logoeffekt
+│   ├── sentinex-s-w.png      # Navigationslogo (weiß)
+│   ├── net-graphic.png       # Dashboard-Titelgrafik
+│   └── favicon.png           # Website-Icon
 │
 ├── venv/                     # Python virtualenv (nicht mitgitten!)
 │
@@ -60,7 +70,7 @@ cd netbox-ip-diff-dashboard
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-pip install flask requests
+pip install flask requests babel
 ```
 
 ### 3. Locale aktivieren (für deutsches Datumsformat)
@@ -84,7 +94,7 @@ python3 daily.py
 Empfohlen: täglicher Cronjob z. B.:
 
 ```cron
-0 3 * * * /path/to/venv/bin/python3 /opt/netbox-ip-diff-dashboard/daily.py
+0 6 * * * /opt/netbox-ip-diff-dashboard/venv/bin/python3 /opt/netbox-ip-diff-dashboard/daily.py >> /var/log/netbox-diff.log 2>&1
 ```
 
 ---
@@ -105,6 +115,33 @@ Optional Port angeben:
 
 ```bash
 python3 app.py --port 8080
+```
+
+---
+
+## 🔁 systemd + Cron Integration
+
+### Systemd-Service:
+
+```ini
+[Unit]
+Description=NetBox Dashboard
+After=network.target
+
+[Service]
+ExecStart=/opt/netbox-ip-diff-dashboard/venv/bin/python3 /opt/netbox-ip-diff-dashboard/app.py
+WorkingDirectory=/opt/netbox-ip-diff-dashboard
+Restart=always
+Environment=FLASK_ENV=production
+User=root
+
+[Install]
+WantedBy=multi-user.target
+```
+
+### Aktivieren:
+```bash
+sudo systemctl enable --now netbox-dashboard.service
 ```
 
 ---
@@ -147,8 +184,8 @@ python3 app.py --port 8080
 Bearbeite `static/sentinex.css` für:
 
 - Farben (z. B. `.tag` für Badge-Style)
-- Schriftgrößen
-- Flexibles Responsive Design
+- Schriftgrößen, Fonts, Hovereffekte
+- Logo-Animationen (hover, pulsierend)
 
 ---
 
@@ -164,6 +201,8 @@ Am Ende der Seite:
     <span>The Leatherman</span>
     <span>·</span>
     <span>sentinex GmbH</span>
+    <span>·</span>
+    <span>{{ year }}</span>
   </div>
 </footer>
 ```
@@ -172,12 +211,15 @@ Am Ende der Seite:
 
 ## 🛡️ ToDo / Roadmap
 
-- [ ] CSV- / Excel-Export
-- [ ] Light/Dark-Mode Toggle
+- [x] CSV- / Excel-Export mit sichtbaren Zeilen
+- [x] Snapshot-Zeitstempel human-readable + sortierbar
+- [x] Font Awesome Icons statt Emojis
+- [x] Animated NetBox-Logo (hover)
 - [ ] Auth (Basic Auth oder OIDC)
-- [ ] Slack/Teams-Benachrichtigung bei Änderungen
 - [ ] API-Endpoint zur Snapshot-Abfrage
-- [ ] Monitoring-Integration (z. B. über Prometheus)
+- [ ] Monitoring-Integration (Prometheus)
+- [ ] Slack/Teams-Benachrichtigung bei Änderungen
+- [ ] Light/Dark-Mode Toggle
 
 ---
 

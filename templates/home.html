@@ -3,16 +3,16 @@
 
 <!-- Zentrierter Hauptinhalt -->
 <div class="flex flex-col items-center justify-center text-center px-4 py-16">
-  <h1 class="text-white text-2xl font-bold mb-6">Willkommen zum NetBox IP-Diff-Dashboard</h1>
-  <img src="/static/netbox-light-favicon.png" alt="NetBox Logo" class="h-32 sm:h-40 mb-6">
-  <h4 class="text-white text-sm mb-4 font-semibold">Wähle eine Ansicht:</h4>
-
+  <h1 class="text-white text-2xl font-bold mb-6">Willkommen zum <i class="fa-solid fa-circle-nodes"></i> NetBox IP-Diff-Dashboard</h1>
+  <img src="/static/netbox_logo.svg" alt="NetBox Logo" class="h-32 sm:h-40 mb-6 logo-hover">
+  <div class="my-8"></div>
+  <h4 class="text-white text-base mb-4 font-semibold">Wähle eine Ansicht:</h4>
   <div class="flex flex-col sm:flex-row gap-4 justify-center">
-    <a href="/snapshots" class="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded transition">
-      📃 Gesamtübersicht
+    <a href="/snapshots" class="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition">
+      <i class="fas fa-file-alt mr-2"></i> Gesamtübersicht
     </a>
-    <a href="/diffs" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded transition">
-      📦 Änderungsübersicht
+    <a href="/diffs" class="bg-purple-700 hover:bg-purple-600 text-white px-6 py-3 rounded-lg transition">
+      <i class="fas fa-box-open mr-2"></i> Änderungsübersicht
     </a>
   </div>
 </div>
