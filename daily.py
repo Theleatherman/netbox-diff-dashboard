@@ -155,7 +155,7 @@ def main():
         body_html = f"""
         <html>
         <body style="font-family: sans-serif; background-color: #0b0b0b; color: #ccc; padding: 2em;">
-          <h2>📦 NetBox Snapshot – Keine Änderungen</h2>
+          <h2>📦 NetBox IP-Diff-Status – Keine Änderungen</h2>
           <p>Seit dem letzten Snapshot vom <strong>{last_formatted}</strong> wurden keine Änderungen festgestellt.</p>
           <p style="margin-top:2em; font-size: 0.9em;">Snapshot erstellt am <strong>{now_formatted}</strong>.</p>
         </body>

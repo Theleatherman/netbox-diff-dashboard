@@ -59,7 +59,7 @@ def render_diff_html(diff):
       <link rel="stylesheet" href="/static/sentinex.css">
     </head>
     <body>
-      <h1 style="color: #fff;"><i class="fa-solid fa-circle-nodes"></i> NetBox IP-Diff-Status</h1>
+      <h1 style="color: #fff;">📦 NetBox IP-Diff-Status</h1>
     """
     if diff.get("added"):
         html += "<h3 style='color:#4caf50;'>➕ Hinzugefügt</h3><table><thead><tr><th>IP</th><th>Beschreibung</th><th>DNS</th><th>Tags</th></tr></thead><tbody>"
