@@ -7,7 +7,7 @@ from deepdiff import DeepDiff
 from emailer import send_email, format_datetime, render_diff_html
 import ast
 
-DB_PATH = "netbox.db"
+DB_PATH = "/opt/netbox-ip-diff-dashboard/netbox.db"
 
 def normalize(data):
     normalized = []
@@ -122,8 +122,8 @@ def main():
 
     current = get_mgmt_ips()
     if not validate_snapshot(current):
-        print("❌ Snapshot ungültig – wird NICHT gespeichert.")
-        return  # ← nur hier abbrechen!
+        print(f"❌ Snapshot am {now} ungültig – keine Daten gespeichert.")
+        return
 
     conn = sqlite3.connect(DB_PATH)
     last_date = get_last_snapshot(conn)
@@ -132,28 +132,36 @@ def main():
     current_norm = normalize(current)
     previous_norm = normalize(previous)
 
+    last_formatted = format_datetime(last_date) if last_date else "–"
+    now_formatted = format_datetime(now)
+
     if current_norm != previous_norm:
         print("📝 Änderungen erkannt – Snapshot wird gespeichert.")
         diff = build_diff(previous_norm, current_norm)
         store_snapshot(conn, now, current)
         store_diff(conn, now, diff)
 
-        last_formatted = format_datetime(last_date) if last_date else "–"
-        now_formatted = format_datetime(now)
-
         subject = f"NetBox Snapshot-Diff am {now_formatted}"
         body_plain = f"Änderungen vom {last_formatted} bis {now_formatted}:\n\n{json.dumps(diff, indent=2, ensure_ascii=False)}"
         body_html = render_diff_html(diff)
+
         send_email(subject, body_plain, body_html)
         print("✅ Snapshot gespeichert und E-Mail versendet.")
+
     else:
-        now_formatted = format_datetime(now)
-        last_formatted = format_datetime(last_date) if last_date else "–"
+        print("📭 Keine Änderungen – Snapshot nicht gespeichert.")
         subject = f"NetBox Snapshot am {now_formatted}"
         body_plain = f"Keine Änderungen seit dem letzten Snapshot ({last_formatted})."
-        body_html = render_diff_html(diff)
+        body_html = f"""
+        <html>
+        <body style="font-family: sans-serif; background-color: #0b0b0b; color: #ccc; padding: 2em;">
+          <h2>📦 NetBox Snapshot – Keine Änderungen</h2>
+          <p>Seit dem letzten Snapshot vom <strong>{last_formatted}</strong> wurden keine Änderungen festgestellt.</p>
+          <p style="margin-top:2em; font-size: 0.9em;">Snapshot erstellt am <strong>{now_formatted}</strong>.</p>
+        </body>
+        </html>
+        """
         send_email(subject, body_plain, body_html)
-        print("📭 Keine Änderungen – E-Mail verschickt.")
 
 if __name__ == "__main__":
     main()
