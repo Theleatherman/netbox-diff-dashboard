@@ -11,17 +11,19 @@ Visualisiert IP-Zustände, ermöglicht Tag-Filter, Volltextsuche, Differenzvergl
 - 🕵️ **Filterung nach Tags** (dynamisch, „mgmt-if“ wird automatisch ausgeblendet)
 - 🔍 **Volltextsuche** über IP, Beschreibung & DNS
 - 📊 **DataTables-Integration** für Sortierung, Pagination & Suche
-- 🏷️ Tags in Badge-Optik, an NetBox UI angelehnt
-- 🧠 Automatische **Diff-Berechnung zwischen Snapshots**
+- 📤 **CSV- und Excel-Export** über Button
+- 🧠 Automatische **Diff-Berechnung zwischen Snapshots** (inkl. farblich differenzierter Tabellen)
+- 💌 **HTML-E-Mail-Benachrichtigung** bei Änderungen (inkl. `emailer.py`)
+- 📅 **Snapshot-Cleanup-Script** (`clean_bad_snapshots.py`)
+- 🧭 Navigation mit aktiver Seitenmarkierung und **Font Awesome Icons**
+- ✨ Hover-basierter, leicht pulsierender Effekt am **NetBox-Logo**
 - 🌙 **Dark Mode UI** im Sentinex-Design (anpassbar per CSS)
 - 🧾 **Responsive** für Tablets / kleine Displays
+- 🔐 **OAuth2 (Okta) Login** via `oauth2-proxy`
+- 🌐 **Reverse Proxy / HTTPS / Auth** via nginx
 - 💬 Lokalisierung in Deutsch
-- 📥 SQLite-basiertes Datenlog
+- 📥 SQLite-basiertes Datenlog (`netbox.db`)
 - ❤️ Footer: „Made with ❤️ by The Leatherman | sentinex GmbH“
-- 📤 Exportfunktionen für CSV & Excel
-- 🧠 Snapshot-Vergleich via Web + E-Mail mit HTML-Template
-- 🧭 Navigation mit aktiver Seitenmarkierung & Font Awesome Icons
-- ✨ Pulsierender NetBox-Logoeffekt im UI (hover-responsive)
 
 ---
 
@@ -30,28 +32,48 @@ Visualisiert IP-Zustände, ermöglicht Tag-Filter, Volltextsuche, Differenzvergl
 ```bash
 netbox-ip-diff-dashboard/
 │
-├── app.py                     # Flask-Frontend für Snapshot-Ansicht & Diff
-├── daily.py                  # täglicher NetBox-API-Abzug (Cron geeignet)
-├── netbox.py                 # API-Abfrage-Logik
-├── emailer.py                # HTML-E-Mail-Versand für Snapshot-Diffs
-├── netbox.db                 # SQLite-DB mit Snapshots & Diffs
+├── app.py                        # Flask-Frontend (Home, Snapshots, Diffs)
+├── daily.py                      # täglicher Snapshot + Diff-Bildung + E-Mail
+├── netbox.py                     # NetBox-API-Abfrage (authentifiziert, gefiltert)
+├── emailer.py                    # HTML-Mail-Renderer für Diff-Benachrichtigung
+├── config.py                     # zentrale Konfig (u. a. SMTP)
+├── diffing.py                    # Kernlogik zum Vergleich der Snapshots
+├── db.py                         # DB-Hilfsfunktionen
+├── clean_bad_snapshots.py        # Bereinigt Snapshots mit leerem Inhalt
 │
-├── templates/
-│   ├── index.html            # Snapshot-Webansicht
-│   ├── diffs.html            # Änderungsansicht (Diffs)
-│   ├── snapshots.html        # Rohdaten-Tabellenansicht
-│   ├── home.html             # Startseite mit Logo & Navigation
-│   └── base.html             # zentrales Layout inkl. Navigation
+├── nginx/
+│   └── netbox-diff.conf          # nginx-Site mit SSL & OAuth2-Proxy
+│
+├── oauth2-proxy/
+│   └── oauth2-proxy.cfg          # Konfig für Okta + Upstream-Proxypass
 │
 ├── static/
-│   ├── sentinex.css          # zentrales UI/CSS-Theme inkl. Logoeffekt
-│   ├── sentinex-s-w.png      # Navigationslogo (weiß)
-│   ├── net-graphic.png       # Dashboard-Titelgrafik
-│   └── favicon.png           # Website-Icon
+│   ├── sentinex.css              # CI-Design / Dark Theme / Logo-Effekt
+│   ├── sentinex-s-w.png          # Navigationslogo (weiß)
+│   ├── netbox_logo.svg           # pulsierendes Dashboard-Logo
+│   ├── netbox-light-favicon.png  # Favicon hell
+│   ├── apple-icon.png            # Apple Touch Icon
+│   └── favicon.png               # Browser-Favicon
 │
-├── venv/                     # Python virtualenv (nicht mitgitten!)
+├── templates/
+│   ├── base.html                 # zentrales Layout + Navigation
+│   ├── home.html                 # Startseite (Dashboard + Links)
+│   ├── index.html                # Snapshot-Ansicht mit Filter
+│   ├── diffs.html                # Änderungsübersicht
+│   ├── snapshots.html            # Tabellenansicht (raw)
+│   ├── template.html             # HTML-Vorlage für E-Mail
+│   └── test-mail.py              # Mailversandtest (Debug)
 │
-└── README.md                 # diese Datei
+├── netbox.db                     # SQLite-Datenbank (Snapshots & Diffs)
+├── logs_cli.py                   # Snapshots/Logs für Debug (CLI-basiert)
+├── report.html                   # statisches HTML-Diff-Report-Demo
+├── requirements.txt              # Python-Abhängigkeiten
+├── schema.sql                    # optionaler SQL-Dump
+│
+├── .env                          # Umgebungsvariablen (z. B. SMTP)
+├── .gitignore
+├── LICENSE
+└── README.md                     # diese Datei
 ```
 
 ---
@@ -206,6 +228,145 @@ Am Ende der Seite:
   </div>
 </footer>
 ```
+---
+
+## 🔐 Reverse Proxy mit HTTPS & Okta Authentifizierung
+
+### 1. nginx installieren
+
+```bash
+sudo apt update
+sudo apt install nginx
+```
+
+---
+
+### 2. SSL-Zertifikat bereitstellen
+
+Zertifikatsdateien in folgende Pfade ablegen:
+
+```bash
+/etc/ssl/certs/wildcard_avemo-group_net.crt
+/etc/ssl/private/wildcard_avemo-group_net.key
+```
+
+Dateiberechtigungen absichern:
+
+```bash
+chmod 600 /etc/ssl/private/wildcard_avemo-group_net.key
+```
+
+---
+
+### 3. nginx als Reverse Proxy konfigurieren
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name netbox-diff.avemo-group.net;
+
+    ssl_certificate     /etc/ssl/certs/wildcard_avemo-group_net.crt;
+    ssl_certificate_key /etc/ssl/private/wildcard_avemo-group_net.key;
+
+    location /oauth2/ {
+        proxy_pass http://localhost:4180;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location / {
+        auth_request /oauth2/auth;
+        error_page 401 = /oauth2/start;
+
+        proxy_pass http://localhost:4180;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+```
+
+Aktivieren & neustarten:
+
+```bash
+sudo systemctl reload nginx
+```
+
+---
+
+### 4. OAuth2-Proxy herunterladen & entpacken
+
+```bash
+cd /opt
+wget https://github.com/oauth2-proxy/oauth2-proxy/releases/download/v7.9.0/oauth2-proxy-v7.9.0.linux-amd64.tar.gz
+tar -xvzf oauth2-proxy-v7.9.0.linux-amd64.tar.gz
+mv oauth2-proxy-v7.9.0.linux-amd64 oauth2-proxy
+chmod +x /opt/oauth2-proxy/oauth2-proxy
+```
+
+---
+
+### 5. Konfiguration erstellen unter `/etc/oauth2-proxy.cfg`
+
+Zunächst das cookie_secret generieren:
+```bash
+head -c32 /dev/urandom | base64
+```
+
+```ini
+provider = "oidc"
+redirect_url = "https://netbox-diff.avemo-group.net/oauth2/callback"
+oidc_issuer_url = "https://login.avemo-it.cloud/oauth2/default"
+upstreams = [ "http://127.0.0.1:8000" ]
+email_domains = [ "*" ]
+
+client_id = "OKTA_CLIENT_ID"
+client_secret = "OKTA_CLIENT_SECRET"
+
+cookie_secret = "BASE64_32_BYTE_SECRET"
+cookie_secure = true
+skip_provider_button = true
+pass_access_token = true
+```
+
+> Ersetze `OKTA_CLIENT_ID`, `OKTA_CLIENT_SECRET` und `cookie_secret` entsprechend deinen Werten.
+
+---
+
+### 6. Systemd-Service für OAuth2-Proxy
+
+```ini
+# /etc/systemd/system/oauth2-proxy.service
+
+[Unit]
+Description=OAuth2 Proxy for NetBox Diff Dashboard
+After=network.target
+
+[Service]
+ExecStart=/opt/oauth2-proxy/oauth2-proxy --config /etc/oauth2-proxy.cfg
+WorkingDirectory=/opt
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Aktivieren & starten:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now oauth2-proxy.service
+```
+
+---
+
+### 7. Testzugriff
+
+- Aufrufen: `https://netbox-diff.avemo-group.net`
+- Login erfolgt über Okta
+- Nach erfolgreicher Authentifizierung erfolgt Weiterleitung zum Dashboard
+
+> Alle Requests an `/` sind nun durch OAuth2-Login via Okta geschützt.
 
 ---
 
@@ -215,7 +376,8 @@ Am Ende der Seite:
 - [x] Snapshot-Zeitstempel human-readable + sortierbar
 - [x] Font Awesome Icons statt Emojis
 - [x] Animated NetBox-Logo (hover)
-- [ ] Auth (Basic Auth oder OIDC)
+- [x] HTTPS mit wildcard-Zertifkat
+- [x] Auth (Basic Auth oder OIDC)
 - [ ] API-Endpoint zur Snapshot-Abfrage
 - [ ] Monitoring-Integration (Prometheus)
 - [ ] Slack/Teams-Benachrichtigung bei Änderungen
