@@ -99,6 +99,7 @@ table.dataTable thead th {
 }
 
 table.dataTable tbody td {
+  font-family: "Montserrat", sans-serif;
   padding: 0.6rem;
   border-bottom: 1px solid #2c2c2e;
   vertical-align: top;
@@ -118,7 +119,7 @@ table.dataTable tbody td {
 }
 
 .dataTables_filter input {
-  font-family: "noka", sans-serif;
+  font-family: "Montserrat", sans-serif;
   background-color: #1b1b1d;
   color: white;
   border: 1px solid #9B33C1;
@@ -157,6 +158,7 @@ table.dataTable tbody td {
 
   .filters select,
   .filters input[type="search"] {
+    font-family: "Montserrat", sans-serif;
     width: 100%;
   }
 
