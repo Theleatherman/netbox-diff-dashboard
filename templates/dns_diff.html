@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mx-auto px-4 py-8">
+  <h2 class="text-white text-xl font-bold mb-4"><i class="fa-solid fa-right-left mr-2"></i> DNS ↔ NetBox Diff</h2>
+
+  {% if error %}
+    <div class="alert alert-danger text-white bg-red-600 p-2 mb-4 rounded">
+      <strong>Fehler:</strong> {{ error }}
+    </div>
+  {% endif %}
+
+  {% if cache_age %}
+    <div class="text-sm text-gray-400 mb-4">
+      DNS-Daten zuletzt aktualisiert am: {{ cache_age }}
+    </div>
+  {% endif %}
+
+  <table id="dns-diff-table" class="display w-full text-sm">
+    <thead>
+      <tr>
+        <th>Typ</th>
+        <th>IP</th>
+        <th>Hostname (NetBox)</th>
+        <th>Hostname (DNS)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ip, hostname in diff.only_in_netbox.items() %}
+        <tr>
+          <td>Nur in NetBox</td>
+          <td>{{ ip }}</td>
+          <td>{{ hostname }}</td>
+          <td></td>
+        </tr>
+      {% endfor %}
+      {% for ip, hostname in diff.only_in_dns.items() %}
+        <tr>
+          <td>Nur in DNS</td>
+          <td>{{ ip }}</td>
+          <td></td>
+          <td>{{ hostname }}</td>
+        </tr>
+      {% endfor %}
+      {% for ip, host_netbox, host_dns in diff.hostname_mismatches %}
+        <tr>
+          <td>Geändert</td>
+          <td>{{ ip }}</td>
+          <td>{{ host_netbox }}</td>
+          <td>{{ host_dns }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- DataTables + Buttons -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+
+<script>
+$(document).ready(function () {
+  $('#dns-diff-table').DataTable({
+    pageLength: 25,
+    dom: 'Bfrtip',
+    buttons: ['csv', 'excel'],
+    language: {
+      search: "🔍 Suche:",
+      paginate: { previous: "←", next: "→" },
+      info: "Zeige _START_ bis _END_ von _TOTAL_ Einträgen",
+      zeroRecords: "Keine passenden Einträge gefunden",
+      buttons: {
+        csv: '<i class="fas fa-file-csv mr-2"></i> CSV',
+        excel: '<i class="fas fa-file-excel mr-2"></i> Excel'
+      }
+    }
+  });
+});
+</script>
+
+{% endblock %}

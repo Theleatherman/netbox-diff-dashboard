@@ -55,7 +55,7 @@ h1 {
 }
 
 .filters label {
-  font-family: "noka", sans-serif;
+  font-family: "Montserrat", sans-serif;
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -64,7 +64,7 @@ h1 {
 
 .filters select,
 .filters input[type="search"] {
-  font-family: "noka", sans-serif;
+  font-family: "Montserrat", sans-serif;
   background-color: #1b1b1d;
   color: white;
   border: 1px solid #9B33C1;
@@ -80,7 +80,7 @@ h1 {
 
 /* === Tabelle (DataTables) === */
 table.dataTable {
-  font-family: "noka", sans-serif;
+  font-family: "Montserrat", sans-serif;
   background-color: #1b1b1d;
   color: white;
   border-collapse: collapse;
@@ -106,7 +106,7 @@ table.dataTable tbody td {
 }
 
 .dataTables_wrapper {
-  font-family: "noka", sans-serif;
+  font-family: "Montserrat", sans-serif;
   color: white;
 }
 
@@ -114,7 +114,7 @@ table.dataTable tbody td {
 .dataTables_length,
 .dataTables_info,
 .dataTables_paginate {
-  font-family: "noka", sans-serif;
+  font-family: "Montserrat", sans-serif;
   color: white;
 }
 
@@ -129,12 +129,12 @@ table.dataTable tbody td {
 
 /* === Tags === */
 .tag {
-  font-family: "noka", sans-serif;
+  font-family: "Montserrat", sans-serif;
   display: inline-block;
   background-color: #9B33C1;
   color: white;
   font-size: 0.75rem;
-  font-weight: 400;
+  font-weight: 500;
   padding: 0.25rem 0.6rem;
   border-radius: 999px;
   margin: 0.1rem 0.2rem 0.1rem 0;
@@ -193,7 +193,7 @@ h3.removed  { color: #f44336; }
 h3.changed  { color: #ff9800; }
 
 footer {
-  font-family: "noka", sans-serif;
+  font-family: "Montserrat", sans-serif;
   margin-top: 4rem;
   padding: 1rem 0;
   border-top: 1px solid #2c2c2e;
@@ -217,7 +217,7 @@ footer {
 }
 
 footer a {
-  font-family: "noka", sans-serif;
+  font-family: "Montserrat", sans-serif;
   color: #ccc;
   text-decoration: none;
   transition: color 0.2s;
@@ -229,7 +229,7 @@ footer a:hover {
 }
 
 nav a.active {
-  font-family: "noka", sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-weight: bold;
   color: #fff !important;
   border-bottom: 2px solid #7e57c2;

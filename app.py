@@ -6,6 +6,9 @@ from datetime import datetime
 from babel.dates import format_datetime as babel_format_datetime
 import locale
 import os
+from dns_diff import get_ip_hostname_diff
+from dns_cache import load_dns_cache, get_dns_cache_age
+from netbox import get_mgmt_ips
 
 app = Flask(__name__)
 DB_PATH = "netbox.db"
@@ -118,8 +121,64 @@ def snapshots():
                            year=datetime.now().year,
                            active_page="snapshots")
 
+@app.route("/dns-diff")
+def dns_diff_view():
+    try:
+        netbox_map = get_mgmt_ips()            # z. B. { "10.1.0.1": "host01" }
+        dns_map = load_dns_cache()             # z. B. { "10.1.0.1": "host01" }
+
+        only_in_netbox = {
+            ip: netbox_map[ip]
+            for ip in netbox_map
+            if ip not in dns_map
+        }
+
+        only_in_dns = {
+            ip: dns_map[ip]
+            for ip in dns_map
+            if ip not in netbox_map
+        }
+
+        mismatches = []
+        for ip in netbox_map:
+            if ip in dns_map:
+                netbox_host = netbox_map[ip]
+                dns_host = dns_map[ip]
+                if (
+                    netbox_host and dns_host and
+                    isinstance(netbox_host, str) and isinstance(dns_host, str) and
+                    netbox_host.lower() != dns_host.lower()
+                ):
+                    mismatches.append((ip, netbox_host, dns_host))
+
+        diff = {
+            "only_in_netbox": only_in_netbox,
+            "only_in_dns": only_in_dns,
+            "hostname_mismatches": mismatches
+        }
+
+        return render_template(
+            "dns_diff.html",
+            diff=diff,
+            cache_age=get_dns_cache_age(),
+            active_page="dns-diff"
+        )
+
+    except Exception as e:
+        return render_template(
+            "dns_diff.html",
+            diff={
+                "only_in_netbox": {},
+                "only_in_dns": {},
+                "hostname_mismatches": []
+            },
+            error=str(e),
+            cache_age=None,
+            active_page="dns-diff"
+        )
+
 # 🚀 Start
 if __name__ == "__main__":
     import sys
     port = int(sys.argv[2]) if len(sys.argv) >= 3 and sys.argv[1] == "--port" else 8000
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="127.0.0.1", port=port, debug=True)
