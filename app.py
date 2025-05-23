@@ -124,8 +124,12 @@ def snapshots():
 @app.route("/dns-diff")
 def dns_diff_view():
     try:
-        netbox_map = get_mgmt_ips()            # z. B. { "10.1.0.1": "host01" }
-        dns_map = load_dns_cache()             # z. B. { "10.1.0.1": "host01" }
+        netbox_map = {
+            ip.split("/")[0]: dns
+            for (ip, desc, dns, tags) in get_mgmt_ips()
+            if ip and dns and isinstance(dns, str)
+        }
+        dns_map = load_dns_cache()              # z. B. { "10.1.0.1": "host01" }
 
         only_in_netbox = {
             ip: netbox_map[ip]
@@ -145,9 +149,11 @@ def dns_diff_view():
                 netbox_host = netbox_map[ip]
                 dns_host = dns_map[ip]
                 if (
-                    netbox_host and dns_host and
-                    isinstance(netbox_host, str) and isinstance(dns_host, str) and
-                    netbox_host.lower() != dns_host.lower()
+                    isinstance(netbox_host, str)
+                    and isinstance(dns_host, str)
+                    and netbox_host.strip()
+                    and dns_host.strip()
+                    and netbox_host.strip().lower() != dns_host.strip().lower()
                 ):
                     mismatches.append((ip, netbox_host, dns_host))
 
@@ -161,6 +167,7 @@ def dns_diff_view():
             "dns_diff.html",
             diff=diff,
             cache_age=get_dns_cache_age(),
+            year=datetime.now().year,
             active_page="dns-diff"
         )
 
@@ -174,6 +181,7 @@ def dns_diff_view():
             },
             error=str(e),
             cache_age=None,
+            year=datetime.now().year,
             active_page="dns-diff"
         )
 

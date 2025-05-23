@@ -1,49 +1,37 @@
 import json
 import urllib3
-from config import NETBOX_API_URL, NETBOX_API_TOKEN, DNS_SERVER, DNS_HOSTNAME, CERT_PEM, CERT_KEY_PEM
 import requests
 import winrm
 from ipaddress import ip_address
+
+from config import NETBOX_API_URL, NETBOX_API_TOKEN, DNS_SERVER, CERT_PEM, CERT_KEY_PEM
 from dns_cache import load_dns_cache, get_dns_cache_age
-
-
-# ================== KONFIGURATION ==================
+from netbox import get_mgmt_ips  # ← wichtig: deine Funktion, die list[tuple] zurückgibt
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-NETBOX_API_HEADERS = {"Authorization": f"Token {NETBOX_API_TOKEN}"} if NETBOX_API_TOKEN else {}
-
-# ========== FUNKTIONEN ==========
+NETBOX_API_HEADERS = {
+    "Authorization": f"Token {NETBOX_API_TOKEN}"
+} if NETBOX_API_TOKEN else {}
 
 def get_netbox_ips():
     """
-    Ruft IPs und Hostnamen aus NetBox ab
+    Wandelt Ergebnis von get_mgmt_ips() in IP→Hostname-map um
     """
-    ip_hostname_map = {}
-    url = NETBOX_API_URL
-    while url:
-        resp = requests.get(url, headers=NETBOX_API_HEADERS, verify=False)
-        resp.raise_for_status()
-        data = resp.json()
-        for ip in data["results"]:
-            ip_address_str = str(ip_address(ip["address"].split("/")[0]))
-            hostname = ip.get("dns_name") or ip.get("description") or ""
-            ip_hostname_map[ip_address_str] = hostname.strip().lower()
-        url = data["next"]
-    return ip_hostname_map
-
+    return {
+        ip: dns
+        for (ip, desc, dns, tags) in get_mgmt_ips()
+        if ip and dns and isinstance(dns, str)
+    }
 
 def get_dns_records_via_winrm():
-    """
-    Holt A- und PTR-Records vom DNS Server über WinRM mit Zertifikat
-    """
     session = winrm.Session(
         f"https://{DNS_SERVER}:5986/wsman",
-        auth=("dummy", "dummy"),  # wird ignoriert bei transport="certificate"
+        auth=("dummy", "dummy"),
         transport="certificate",
         cert_pem=CERT_PEM,
         cert_key_pem=CERT_KEY_PEM,
-        server_cert_validation="ignore"  # bei echtem CA-Zertifikat → "validate"
+        server_cert_validation="ignore"
     )
 
     ps_script = """
@@ -73,12 +61,12 @@ def get_dns_records_via_winrm():
 
     return ip_hostname_map
 
-
 def get_ip_hostname_diff():
-    """
-    Vergleicht NetBox-IPs mit DNS-Records (inkl. Hostname-Mismatch-Erkennung)
-    """
-    netbox_map = get_netbox_ips()
+    netbox_map = {
+        ip.split("/")[0]: dns
+        for (ip, desc, dns, tags) in get_mgmt_ips()
+        if ip and dns and isinstance(dns, str)
+    }
     dns_map = load_dns_cache()
 
     only_in_netbox = {
@@ -101,7 +89,12 @@ def get_ip_hostname_diff():
             netbox_host = netbox_map[ip]
             dns_host = dns_map[ip]
             in_both.append((ip, netbox_host, dns_host))
-            if netbox_host and dns_host and netbox_host != dns_host:
+            if (
+                isinstance(netbox_host, str)
+                and isinstance(dns_host, str)
+                and netbox_host and dns_host
+                and netbox_host.lower() != dns_host.lower()
+            ):
                 hostname_mismatches.append((ip, netbox_host, dns_host))
 
     return {

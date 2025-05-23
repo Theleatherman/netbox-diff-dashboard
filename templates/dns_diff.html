@@ -2,7 +2,7 @@
 {% block content %}
 
 <div class="container mx-auto px-4 py-8">
-  <h2 class="text-white text-xl font-bold mb-4"><i class="fa-solid fa-right-left mr-2"></i> DNS ↔ NetBox Diff</h2>
+  <h2 class="text-white text-xl font-bold mb-4"><i class="fa-solid fa-right-left mr-2"></i> DNS ↔ NetBox</h2>
 
   {% if error %}
     <div class="alert alert-danger text-white bg-red-600 p-2 mb-4 rounded">
@@ -19,37 +19,39 @@
   <table id="dns-diff-table" class="display w-full text-sm">
     <thead>
       <tr>
-        <th>Typ</th>
         <th>IP</th>
         <th>Hostname (NetBox)</th>
         <th>Hostname (DNS)</th>
+        <th>Abgleich</th>
       </tr>
     </thead>
     <tbody>
-      {% for ip, hostname in diff.only_in_netbox.items() %}
+    {% for ip, hostname in diff.only_in_netbox.items() %}
         <tr>
-          <td>Nur in NetBox</td>
-          <td>{{ ip }}</td>
-          <td>{{ hostname }}</td>
-          <td></td>
+        <td>{{ ip }}</td>
+        <td>{{ hostname }}</td>
+        <td></td>
+        <td><span class="bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded">Nur in NetBox</span></td>
         </tr>
-      {% endfor %}
-      {% for ip, hostname in diff.only_in_dns.items() %}
+    {% endfor %}
+
+    {% for ip, hostname in diff.only_in_dns.items() %}
         <tr>
-          <td>Nur in DNS</td>
-          <td>{{ ip }}</td>
-          <td></td>
-          <td>{{ hostname }}</td>
+        <td>{{ ip }}</td>
+        <td></td>
+        <td>{{ hostname }}</td>
+        <td><span class="bg-yellow-500 text-black text-xs font-semibold px-2 py-1 rounded">Nur in DNS</span></td>
         </tr>
-      {% endfor %}
-      {% for ip, host_netbox, host_dns in diff.hostname_mismatches %}
+    {% endfor %}
+
+    {% for mismatch in diff.hostname_mismatches %}
         <tr>
-          <td>Geändert</td>
-          <td>{{ ip }}</td>
-          <td>{{ host_netbox }}</td>
-          <td>{{ host_dns }}</td>
+        <td>{{ mismatch[0] }}</td>
+        <td>{{ mismatch[1] }}</td>
+        <td>{{ mismatch[2] }}</td>
+        <td><span class="bg-green-600 text-white text-xs font-semibold px-2 py-1 rounded">Synchron</span></td>
         </tr>
-      {% endfor %}
+    {% endfor %}
     </tbody>
   </table>
 </div>
@@ -62,24 +64,26 @@
 <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdn.datatables.net/plug-ins/1.13.6/sorting/ip-address.js"></script>
 
 <script>
-$(document).ready(function () {
-  $('#dns-diff-table').DataTable({
-    pageLength: 25,
-    dom: 'Bfrtip',
-    buttons: ['csv', 'excel'],
-    language: {
-      search: "🔍 Suche:",
-      paginate: { previous: "←", next: "→" },
-      info: "Zeige _START_ bis _END_ von _TOTAL_ Einträgen",
-      zeroRecords: "Keine passenden Einträge gefunden",
-      buttons: {
-        csv: '<i class="fas fa-file-csv mr-2"></i> CSV',
-        excel: '<i class="fas fa-file-excel mr-2"></i> Excel'
-      }
+$('#dns-diff-table').DataTable({
+  pageLength: 25,
+  dom: 'Bfrtip',
+  buttons: ['csv', 'excel'],
+  columnDefs: [
+    { type: 'ip-address', targets: 0 }  // Spalte 0 = IP
+  ],
+  language: {
+    search: "🔍 Suche:",
+    paginate: { previous: "←", next: "→" },
+    info: "Zeige _START_ bis _END_ von _TOTAL_ Einträgen",
+    zeroRecords: "Keine passenden Einträge gefunden",
+    buttons: {
+      csv: '<i class="fas fa-file-csv mr-2"></i> CSV',
+      excel: '<i class="fas fa-file-excel mr-2"></i> Excel'
     }
-  });
+  }
 });
 </script>
 
