@@ -2,7 +2,7 @@
 {% block content %}
 
 <div class="container mx-auto px-4 py-8">
-  <h2 class="text-white text-xl font-bold mb-4">Änderungen vom {{ readable_date }}</h2>
+  <h2 class="text-white text-xl font-bold mb-4"><i class="fas fa-box-open mr-2"></i> Änderungen vom {{ readable_date }}</h2>
 
   {% if not diff %}
     <p class="text-green-500"><i class="fa-solid fa-square-check"></i> Keine Änderungen seit dem letzten Snapshot.</p>
