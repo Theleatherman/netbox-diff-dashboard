@@ -84,7 +84,7 @@ def render_diff_html(diff):
         html += "<p style='color:#ccc;'>Keine Änderungen.</p>"
 
     html += f"""
-      <p>Weitere Informationen unter: <a href="http://netbox-diff:8000/">netbox-diff:8000/</a></p>
+      <p>Weitere Informationen unter: <a href="https://netbox-diff.avemo-group.net/">netbox-diff:8000/</a></p>
     """
 
     html += f"""
