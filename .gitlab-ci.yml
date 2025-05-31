@@ -1,0 +1,31 @@
+stages:
+  - sync
+
+variables:
+  PYTHONPATH: "${CI_PROJECT_DIR}"
+
+sync_netbox_dns:
+  stage: sync
+  image: python:3.11
+  script:
+    - pip install --upgrade pip
+    - pip install pywinrm[credssp] requests
+    # Zertifikatdateien bereitstellen (aus GitLab Secure Files oder Variablen)
+    - echo "$CLIENT_PEM" > client.pem
+    - echo "$CLIENT_KEY" > client.key
+    # NetBox-Token als Umgebungsvariable nutzen (aus GitLab CI/CD Settings)
+    - export NETBOX_TOKEN="$NETBOX_TOKEN"
+    # Führe das Skript aus
+    - python netbox_dns_sync.py
+  only:
+    - main
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'   # z.B. für Nachtjobs
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+# Hinweise:
+# - Die Variablen CLIENT_PEM, CLIENT_KEY und NETBOX_TOKEN sollten im GitLab-Projekt
+#   unter Einstellungen > CI/CD > Variablen hinterlegt werden.
+#   (am besten als "protected" & "masked")
+# - Für komplexe/mehrzeilige PEM-Dateien evtl. Base64-Encoding nutzen und im Script decodieren:
+#     echo "$CLIENT_PEM_B64" | base64 -d > client.pem
