@@ -7,7 +7,6 @@ sync_netbox_dns:
   script:
     - pip install --upgrade pip
     - pip install pywinrm[credssp] requests
-    # Zertifikate aus Base64-Variablen dekodieren
     - echo "$CLIENT_PEM_B64" | base64 -d > client.pem
     - echo "$CLIENT_KEY_B64" | base64 -d > client.key
     - export NETBOX_TOKEN="$NETBOX_TOKEN"
@@ -15,6 +14,8 @@ sync_netbox_dns:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
     - if: '$CI_COMMIT_BRANCH == "main"'
+  tags:
+    - python  # Beispiel: tag für einen Runner, der KEINEN dind-Service braucht
 
 
 # Hinweise:
