@@ -1,5 +1,6 @@
 import sqlite3
 from config import DB_PATH
+import ast
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
@@ -29,7 +30,7 @@ def load_latest_snapshot():
     rows = c.fetchall()
     conn.close()
     return [
-        {"address": r[0], "description": r[1], "dns_name": r[2], "tags": eval(r[3])}
+        {"address": r[0], "description": r[1], "dns_name": r[2], "tags": ast.literal_eval(r[3])}
         for r in rows
     ]
 
