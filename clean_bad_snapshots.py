@@ -1,8 +1,5 @@
 import sqlite3
-import json
-from datetime import datetime
-
-DB_PATH = "netbox.db"
+from config import DB_PATH
 
 def is_valid_ip(ip):
     return isinstance(ip, str) and ip.count(".") == 3 and "/" in ip
@@ -13,7 +10,7 @@ def load_snapshot(conn, snapshot_date):
     return c.fetchall()
 
 def clean_snapshots():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=10)
     c = conn.cursor()
 
     c.execute("SELECT DISTINCT snapshot_date FROM ip_records ORDER BY snapshot_date DESC")

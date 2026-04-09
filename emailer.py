@@ -31,7 +31,8 @@ def send_email(subject, plain_body, html_body=None):
     try:
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls()
-            server.login(SMTP_USER, SMTP_PASSWORD)
+            if SMTP_USER and SMTP_PASSWORD:
+                server.login(SMTP_USER, SMTP_PASSWORD)
             server.send_message(msg)
             print("📧 E-Mail erfolgreich gesendet.")
     except Exception as e:
@@ -40,7 +41,7 @@ def send_email(subject, plain_body, html_body=None):
 def format_datetime(iso_str):
     try:
         dt = datetime.fromisoformat(iso_str)
-        return babel_format_datetime(iso_str, format="d. MMMM yyyy, HH:mm 'Uhr'", locale="de")
+        return babel_format_datetime(dt, format="d. MMMM yyyy, HH:mm 'Uhr'", locale="de")
     except Exception:
         return iso_str  # Fallback bei Fehler
     

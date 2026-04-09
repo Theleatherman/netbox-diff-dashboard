@@ -12,3 +12,10 @@ CREATE TABLE IF NOT EXISTS ip_diffs (
     compare_date TEXT,
     diff_json TEXT
 );
+
+CREATE TABLE IF NOT EXISTS dns_cache (
+    ip TEXT PRIMARY KEY,
+    hostname TEXT,
+    zone TEXT,
+    updated_at TEXT
+);

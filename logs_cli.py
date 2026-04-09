@@ -3,8 +3,7 @@ import argparse
 import sqlite3
 import json
 from tabulate import tabulate
-
-DB_PATH = "netbox.db"
+from config import DB_PATH
 
 def list_snapshots():
     conn = sqlite3.connect(DB_PATH)

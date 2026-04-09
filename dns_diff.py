@@ -1,28 +1,8 @@
-import json
-import urllib3
-import requests
 import winrm
-from ipaddress import ip_address
 
-from config import NETBOX_API_URL, NETBOX_API_TOKEN, DNS_SERVER, CERT_PEM, CERT_KEY_PEM
+from config import DNS_SERVER, CERT_PEM, CERT_KEY_PEM
 from dns_cache import load_dns_cache, get_dns_cache_age
 from netbox import get_mgmt_ips  # ← wichtig: deine Funktion, die list[tuple] zurückgibt
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-NETBOX_API_HEADERS = {
-    "Authorization": f"Token {NETBOX_API_TOKEN}"
-} if NETBOX_API_TOKEN else {}
-
-def get_netbox_ips():
-    """
-    Wandelt Ergebnis von get_mgmt_ips() in IP→Hostname-map um
-    """
-    return {
-        ip: dns
-        for (ip, desc, dns, tags) in get_mgmt_ips()
-        if ip and dns and isinstance(dns, str)
-    }
 
 def get_dns_records_via_winrm():
     session = winrm.Session(
@@ -49,6 +29,8 @@ def get_dns_records_via_winrm():
 
     if result.status_code != 0:
         raise RuntimeError(f"DNS Query via WinRM failed: {result.std_err.decode()}")
+
+    import json
 
     records = json.loads(result.std_out.decode())
     ip_hostname_map = {}

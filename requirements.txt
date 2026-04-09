@@ -3,3 +3,7 @@ deepdiff
 jinja2
 python-dotenv
 flask
+Babel
+pywinrm
+tabulate
+pytest

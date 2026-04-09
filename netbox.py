@@ -8,7 +8,7 @@ HEADERS = {"Authorization": f"Token {NETBOX_API_TOKEN}"} if NETBOX_API_TOKEN els
 
 def get_mgmt_ips(tag_slug_filter="mgmt-if"):
     result = []
-    base_url = NETBOX_API_URL + "?limit=1000&fields=address,dns_name,description,tags"
+    base_url = NETBOX_API_URL
     params = {
         "limit": 1000,
         "fields": "address,dns_name,description,tags"
@@ -16,7 +16,8 @@ def get_mgmt_ips(tag_slug_filter="mgmt-if"):
     url = base_url
     while url:
         print(f"Abfrage: {url}")
-        r = requests.get(url, headers=HEADERS, params=params if url == base_url else {}, verify=False)
+        request_params = params if url == base_url else None
+        r = requests.get(url, headers=HEADERS, params=request_params, verify=False, timeout=30)
         r.raise_for_status()
         data = r.json()
         for entry in data.get("results", []):

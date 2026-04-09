@@ -3,11 +3,9 @@ import sqlite3
 import json
 from datetime import datetime
 from netbox import get_mgmt_ips
-from deepdiff import DeepDiff
 from emailer import send_email, format_datetime, render_diff_html
 import ast
-
-DB_PATH = "/opt/netbox-ip-diff-dashboard/netbox.db"
+from config import DB_PATH
 
 def normalize(data):
     normalized = []
@@ -125,7 +123,7 @@ def main():
         print(f"❌ Snapshot am {now} ungültig – keine Daten gespeichert.")
         return
 
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=10)
     last_date = get_last_snapshot(conn)
     previous = get_snapshot_data(conn, last_date) if last_date else []
 
