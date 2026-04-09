@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sqlite3
 import json
+import ipaddress
 from datetime import datetime
 from netbox import get_ips
 from emailer import send_email, format_datetime, render_diff_html, render_diff_plain
@@ -92,7 +93,17 @@ def store_diff(conn, date, diff):
     conn.commit()
 
 def is_valid_ip(ip):
-    return isinstance(ip, str) and ip.count(".") == 3 and "/" in ip
+    if not isinstance(ip, str):
+        return False
+    ip = ip.strip()
+    if "/" not in ip:
+        return False
+    try:
+        # NetBox stores addresses with prefix length (IPv4 and IPv6).
+        ipaddress.ip_interface(ip)
+        return True
+    except ValueError:
+        return False
 
 def validate_snapshot(data):
     if not isinstance(data, list):
