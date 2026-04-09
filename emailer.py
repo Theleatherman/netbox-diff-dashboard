@@ -169,9 +169,9 @@ def render_diff_html(diff):
     if not any([added, removed, changed]):
         html += "<p style='color:#ccc;'>Keine Änderungen.</p>"
 
-        html += f"""
-            <p>Weitere Informationen unter: <a href="https://netbox-diff.avemo-group.net/">https://netbox-diff.avemo-group.net/</a></p>
-        """
+    html += f"""
+      <p>Weitere Informationen unter: <a href="https://netbox-diff.avemo-group.net/">https://netbox-diff.avemo-group.net/</a></p>
+    """
 
     html += f"""
       <hr style="margin-top: 2em; border: none; border-top: 1px solid #333;">
