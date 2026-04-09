@@ -1,5 +1,6 @@
 import os
 import smtplib
+from html import escape
 from dotenv import load_dotenv
 from datetime import datetime
 from babel.dates import format_datetime as babel_format_datetime
@@ -44,9 +45,69 @@ def format_datetime(iso_str):
         return babel_format_datetime(dt, format="d. MMMM yyyy, HH:mm 'Uhr'", locale="de")
     except Exception:
         return iso_str  # Fallback bei Fehler
+
+
+def _fmt_value(value):
+    if isinstance(value, list):
+        return ", ".join(str(v) for v in value)
+    return str(value)
+
+
+def render_diff_plain(diff, last_formatted=None, now_formatted=None):
+    added = diff.get("added", [])
+    removed = diff.get("removed", [])
+    changed = diff.get("changed", {})
+    change_rows = sum(len(fields) for fields in changed.values())
+
+    lines = ["NetBox IP-Diff-Status", ""]
+
+    if last_formatted and now_formatted:
+        lines.append(f"Zeitraum: {last_formatted} bis {now_formatted}")
+    lines.extend([
+        f"Uebersicht: {len(added)} hinzugefuegt, {len(removed)} entfernt, {change_rows} Feldaenderungen auf {len(changed)} IPs.",
+        "",
+    ])
+
+    if added:
+        lines.append("== Hinzugefuegt ==")
+        for ip, desc, dns, tags in added:
+            lines.append(
+                f"- {ip} | Beschreibung: {_fmt_value(desc)} | DNS: {_fmt_value(dns)} | Tags: {_fmt_value(tags)}"
+            )
+        lines.append("")
+
+    if removed:
+        lines.append("== Entfernt ==")
+        for ip, desc, dns, tags in removed:
+            lines.append(
+                f"- {ip} | Beschreibung: {_fmt_value(desc)} | DNS: {_fmt_value(dns)} | Tags: {_fmt_value(tags)}"
+            )
+        lines.append("")
+
+    if changed:
+        lines.append("== Geaendert ==")
+        for ip, changes in changed.items():
+            lines.append(f"- {ip}")
+            for field, change in changes.items():
+                old_value = _fmt_value(change.get("old", ""))
+                new_value = _fmt_value(change.get("new", ""))
+                lines.append(f"  * {field}: '{old_value}' -> '{new_value}'")
+        lines.append("")
+
+    if not any([added, removed, changed]):
+        lines.append("Keine Aenderungen.")
+        lines.append("")
+
+    lines.append("Weitere Informationen: https://netbox-diff.avemo-group.net/")
+    return "\n".join(lines)
     
 def render_diff_html(diff):
     year = datetime.now().year
+    added = diff.get("added", [])
+    removed = diff.get("removed", [])
+    changed = diff.get("changed", {})
+    change_rows = sum(len(fields) for fields in changed.values())
+
     html = """
     <html>
     <head>
@@ -56,32 +117,56 @@ def render_diff_html(diff):
         table { border-collapse: collapse; width: 100%; margin-top: 0.5em; }
         th, td { padding: 8px; border: 1px solid #444; text-align: left; }
         h3 { margin-top: 2em; }
+        .summary { margin: 1em 0 1.5em 0; padding: 1em; border: 1px solid #333; background: #141414; }
+        .summary strong { color: #fff; }
       </style>
       <link rel="stylesheet" href="/static/sentinex.css">
     </head>
     <body>
       <h1 style="color: #fff;">📦 NetBox IP-Diff-Status</h1>
     """
-    if diff.get("added"):
+
+    html += f"""
+      <div class="summary">
+        <p><strong>Übersicht:</strong> {len(added)} hinzugefügt, {len(removed)} entfernt, {change_rows} Feldänderungen auf {len(changed)} IPs.</p>
+      </div>
+    """
+
+    if added:
         html += "<h3 style='color:#4caf50;'>➕ Hinzugefügt</h3><table><thead><tr><th>IP</th><th>Beschreibung</th><th>DNS</th><th>Tags</th></tr></thead><tbody>"
-        for ip, desc, dns, tags in diff["added"]:
-            html += f"<tr><td>{ip}</td><td>{desc}</td><td>{dns}</td><td>{', '.join(tags)}</td></tr>"
+        for ip, desc, dns, tags in added:
+            html += (
+                f"<tr><td>{escape(_fmt_value(ip))}</td>"
+                f"<td>{escape(_fmt_value(desc))}</td>"
+                f"<td>{escape(_fmt_value(dns))}</td>"
+                f"<td>{escape(_fmt_value(tags))}</td></tr>"
+            )
         html += "</tbody></table>"
 
-    if diff.get("removed"):
+    if removed:
         html += "<h3 style='color:#f44336;'>➖ Entfernt</h3><table><thead><tr><th>IP</th><th>Beschreibung</th><th>DNS</th><th>Tags</th></tr></thead><tbody>"
-        for ip, desc, dns, tags in diff["removed"]:
-            html += f"<tr><td>{ip}</td><td>{desc}</td><td>{dns}</td><td>{', '.join(tags)}</td></tr>"
+        for ip, desc, dns, tags in removed:
+            html += (
+                f"<tr><td>{escape(_fmt_value(ip))}</td>"
+                f"<td>{escape(_fmt_value(desc))}</td>"
+                f"<td>{escape(_fmt_value(dns))}</td>"
+                f"<td>{escape(_fmt_value(tags))}</td></tr>"
+            )
         html += "</tbody></table>"
 
-    if diff.get("changed"):
+    if changed:
         html += "<h3 style='color:#ff9800;'>🔁 Geändert</h3><table><thead><tr><th>IP</th><th>Feld</th><th>Alt</th><th>Neu</th></tr></thead><tbody>"
-        for ip, changes in diff["changed"].items():
+        for ip, changes in changed.items():
             for field, change in changes.items():
-                html += f"<tr><td>{ip}</td><td>{field}</td><td>{change['old']}</td><td>{change['new']}</td></tr>"
+                html += (
+                    f"<tr><td>{escape(_fmt_value(ip))}</td>"
+                    f"<td>{escape(_fmt_value(field))}</td>"
+                    f"<td>{escape(_fmt_value(change.get('old', '')))}</td>"
+                    f"<td>{escape(_fmt_value(change.get('new', '')))}</td></tr>"
+                )
         html += "</tbody></table>"
 
-    if not any([diff.get("added"), diff.get("removed"), diff.get("changed")]):
+    if not any([added, removed, changed]):
         html += "<p style='color:#ccc;'>Keine Änderungen.</p>"
 
     html += f"""

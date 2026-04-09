@@ -2,8 +2,8 @@
 import sqlite3
 import json
 from datetime import datetime
-from netbox import get_mgmt_ips
-from emailer import send_email, format_datetime, render_diff_html
+from netbox import get_ips
+from emailer import send_email, format_datetime, render_diff_html, render_diff_plain
 import ast
 from config import DB_PATH
 
@@ -118,7 +118,7 @@ def main():
     now = datetime.now().isoformat()
     print(f"📦 Erzeuge Snapshot: {now}")
 
-    current = get_mgmt_ips()
+    current = get_ips()
     if not validate_snapshot(current):
         print(f"❌ Snapshot am {now} ungültig – keine Daten gespeichert.")
         return
@@ -139,8 +139,8 @@ def main():
         store_snapshot(conn, now, current)
         store_diff(conn, now, diff)
 
-        subject = f"NetBox Snapshot-Diff am {now_formatted}"
-        body_plain = f"Änderungen vom {last_formatted} bis {now_formatted}:\n\n{json.dumps(diff, indent=2, ensure_ascii=False)}"
+        subject = f"NetBox Snapshot-Diff (alle Änderungen) am {now_formatted}"
+        body_plain = render_diff_plain(diff, last_formatted, now_formatted)
         body_html = render_diff_html(diff)
 
         send_email(subject, body_plain, body_html)

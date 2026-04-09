@@ -1,12 +1,9 @@
 import requests
-import urllib3
 from config import NETBOX_API_URL, NETBOX_API_TOKEN
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 HEADERS = {"Authorization": f"Token {NETBOX_API_TOKEN}"} if NETBOX_API_TOKEN else {}
 
-def get_mgmt_ips(tag_slug_filter="mgmt-if"):
+def get_ips(tag_slug_filter=None):
     result = []
     base_url = NETBOX_API_URL
     params = {
@@ -17,12 +14,12 @@ def get_mgmt_ips(tag_slug_filter="mgmt-if"):
     while url:
         print(f"Abfrage: {url}")
         request_params = params if url == base_url else None
-        r = requests.get(url, headers=HEADERS, params=request_params, verify=False, timeout=30)
+        r = requests.get(url, headers=HEADERS, params=request_params, timeout=30)
         r.raise_for_status()
         data = r.json()
         for entry in data.get("results", []):
             tags = [t["slug"] for t in entry.get("tags", []) if isinstance(t, dict)]
-            if tag_slug_filter not in tags:
+            if tag_slug_filter and tag_slug_filter not in tags:
                 continue  # Tag nicht enthalten → überspringen
 
             ip = entry.get("address", "").strip()
@@ -31,3 +28,7 @@ def get_mgmt_ips(tag_slug_filter="mgmt-if"):
             result.append((ip, desc, dns, tags))
         url = data.get("next")
     return result
+
+
+def get_mgmt_ips(tag_slug_filter="mgmt-if"):
+    return get_ips(tag_slug_filter=tag_slug_filter)
