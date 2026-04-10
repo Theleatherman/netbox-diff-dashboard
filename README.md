@@ -56,10 +56,12 @@ netbox-ip-diff-dashboard/
 │   ├── themes/
 │   │   └── avemo/
 │   │       └── avemo.css         # neues AVEMO-orientiertes Theme
-│   ├── sentinex-s-w.png          # Navigationslogo (weiß)
-│   ├── netbox_logo.svg           # pulsierendes Dashboard-Logo
-│   ├── netbox-light-favicon.png  # Favicon hell
-│   ├── apple-icon.png            # Apple Touch Icon
+│   ├── avemo-pfeil_w.png         # AVEMO Logo (helle Variante)
+│   ├── avemo-pfeil_s_logo.png    # AVEMO Logo (dunkle Variante)
+│   ├── sentinex-s-w.png          # Kompatibilitätsalias auf AVEMO-Logo
+│   ├── netbox_logo.svg           # Kompatibilitätslogo (AVEMO Dotmark)
+│   ├── netbox-light-favicon.png  # Favicon (AVEMO)
+│   ├── apple-icon.png            # Apple Touch Icon (AVEMO)
 │   └── favicon.png               # Browser-Favicon
 │
 ├── templates/
