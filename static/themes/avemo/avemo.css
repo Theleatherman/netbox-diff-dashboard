@@ -322,20 +322,26 @@ input,
 table.dataTable.avemo-table {
   width: 100% !important;
   border-collapse: collapse;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line) !important;
 }
 
 table.dataTable.avemo-table thead th {
   background: var(--ink);
   color: #fff;
-  border: 1px solid #24384f;
+  border: 1px solid #24384f !important;
   padding: 0.78rem;
   font-weight: 700;
 }
 
 table.dataTable.avemo-table tbody td {
   padding: 0.68rem;
-  border: 1px solid #e6eaf0;
+  border: 1px solid #e6eaf0 !important;
+}
+
+table.dataTable.avemo-table > thead > tr > th,
+table.dataTable.avemo-table > tbody > tr > td {
+  border-width: 1px !important;
+  border-style: solid !important;
 }
 
 table.dataTable.avemo-table tbody tr:hover {

@@ -57,21 +57,28 @@
 </section>
 
 <script>
-$(document).ready(function() {
-  $('#dns-diff-table').DataTable({
-    pageLength: 25,
-    dom: 'Bfrtip',
-    buttons: ['csv', 'excel'],
-    columnDefs: [
-      { type: 'ip-address', targets: 0 }
-    ],
-    language: {
-      search: "Suche:",
-      paginate: { previous: "Zurück", next: "Weiter" },
-      info: "Zeige _START_ bis _END_ von _TOTAL_ Einträgen",
-      zeroRecords: "Keine passenden Einträge gefunden"
-    }
-  });
+window.addEventListener('load', function () {
+  const $ = window.jQuery;
+  if (!$ || !$.fn || !$.fn.DataTable) {
+    return;
+  }
+
+  if (!$.fn.dataTable.isDataTable('#dns-diff-table')) {
+    $('#dns-diff-table').DataTable({
+      pageLength: 25,
+      dom: 'Bfrtip',
+      buttons: ['csv', 'excel'],
+      columnDefs: [
+        { type: 'ip-address', targets: 0 }
+      ],
+      language: {
+        search: "Suche:",
+        paginate: { previous: "Zurück", next: "Weiter" },
+        info: "Zeige _START_ bis _END_ von _TOTAL_ Einträgen",
+        zeroRecords: "Keine passenden Einträge gefunden"
+      }
+    });
+  }
 });
 </script>
 {% endblock %}

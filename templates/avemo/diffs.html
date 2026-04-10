@@ -57,19 +57,26 @@
 </section>
 
 <script>
-$(document).ready(function() {
-  $('#diff-table').DataTable({
-    pageLength: 25,
-    lengthChange: false,
-    dom: 'Bfrtip',
-    buttons: ['csv', 'excel'],
-    language: {
-      search: "Suche:",
-      paginate: { previous: "Zurück", next: "Weiter" },
-      info: "Zeige _START_ bis _END_ von _TOTAL_ Einträgen",
-      zeroRecords: "Keine passenden Einträge gefunden"
-    }
-  });
+window.addEventListener('load', function () {
+  const $ = window.jQuery;
+  if (!$ || !$.fn || !$.fn.DataTable) {
+    return;
+  }
+
+  if (!$.fn.dataTable.isDataTable('#diff-table')) {
+    $('#diff-table').DataTable({
+      pageLength: 25,
+      lengthChange: false,
+      dom: 'Bfrtip',
+      buttons: ['csv', 'excel'],
+      language: {
+        search: "Suche:",
+        paginate: { previous: "Zurück", next: "Weiter" },
+        info: "Zeige _START_ bis _END_ von _TOTAL_ Einträgen",
+        zeroRecords: "Keine passenden Einträge gefunden"
+      }
+    });
+  }
 });
 </script>
 {% endblock %}
