@@ -5,6 +5,7 @@ import ipaddress
 from datetime import datetime
 from netbox import get_ips
 from emailer import send_email, format_datetime, render_diff_html, render_diff_plain
+from teams_notifier import send_teams_notification
 import ast
 from config import DB_PATH
 
@@ -173,6 +174,7 @@ def main():
         body_html = render_diff_html(diff)
 
         send_email(subject, body_plain, body_html)
+        send_teams_notification(subject, diff, last_formatted, now_formatted)
         print("✅ Snapshot gespeichert und E-Mail versendet.")
 
     else:
