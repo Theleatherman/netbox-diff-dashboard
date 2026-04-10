@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero-panel">
+  <div>
+    <p class="hero-eyebrow">Digitaler Infrastruktur-Überblick</p>
+    <h2 class="hero-title">Willkommen im IP- und DNS-Statuszentrum</h2>
+    <p class="hero-copy">Verfolge täglich alle Änderungen aus NetBox und DNS, erkenne Abweichungen früh und exportiere die Daten für Audits und Betrieb.</p>
+    <div class="hero-actions">
+      <a href="/snapshots" class="btn btn-primary"><i class="fa-solid fa-table"></i>Snapshot Übersicht</a>
+      <a href="/diffs" class="btn btn-secondary"><i class="fa-solid fa-code-compare"></i>IP Diffs</a>
+      <a href="/dns-diff" class="btn btn-secondary"><i class="fa-solid fa-globe"></i>DNS Abgleich</a>
+    </div>
+  </div>
+  <aside class="hero-card">
+    <h3>Weitere Tools</h3>
+    <p>Direkter Zugriff auf den ergänzenden Workflow für Access-Point-Daten.</p>
+    <a href="https://netbox-aps.avemo-group.net/" target="_blank" rel="noopener" class="btn btn-link">
+      <i class="fa-solid fa-network-wired"></i>Cambium AP 2 NetBox Toolkit
+    </a>
+  </aside>
+</section>
+
+<section class="kpi-grid">
+  <article class="kpi-card">
+    <p class="kpi-label">Datenquellen</p>
+    <p class="kpi-value">NetBox + DNS</p>
+  </article>
+  <article class="kpi-card">
+    <p class="kpi-label">Abgleichtyp</p>
+    <p class="kpi-value">Täglich</p>
+  </article>
+  <article class="kpi-card">
+    <p class="kpi-label">Export</p>
+    <p class="kpi-value">CSV / Excel</p>
+  </article>
+</section>
+{% endblock %}

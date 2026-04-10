@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mx-auto px-4 py-8">
+  <h2 class="text-white text-xl font-bold mb-4"><i class="fas fa-box-open mr-2"></i> Änderungen vom {{ readable_date }}</h2>
+
+  {% if not diff %}
+    <p class="text-green-500"><i class="fa-solid fa-square-check"></i> Keine Änderungen seit dem letzten Snapshot.</p>
+  {% else %}
+    <table id="diff-table" class="display w-full text-sm">
+      <thead>
+        <tr>
+          <th><i class="fa-solid fa-font-awesome"></i> Typ</th>
+          <th><i class="fa-solid fa-circle-nodes"></i> IP</th>
+          <th><i class="fa-solid fa-message"></i> Beschreibung</th>
+          <th><i class="fa-solid fa-arrow-up-9-1"></i> DNS</th>
+          <th><i class="fas fa-tags mr-2"></i>Tags</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ip, desc, dns, tags in diff.added %}
+        <tr>
+          <td class="text-green-400 font-bold">Hinzugefügt</td>
+          <td>{{ ip }}</td>
+          <td>{{ desc }}</td>
+          <td>{{ dns }}</td>
+          <td>{% for tag in tags %}<span class="tag tag-{{ tag | lower }}">{{ tag }}</span>{% endfor %}</td>
+        </tr>
+        {% endfor %}
+
+        {% for ip, desc, dns, tags in diff.removed %}
+        <tr>
+          <td class="text-red-400 font-bold">Entfernt</td>
+          <td>{{ ip }}</td>
+          <td>{{ desc }}</td>
+          <td>{{ dns }}</td>
+          <td>{% for tag in tags %}<span class="tag tag-{{ tag | lower }}">{{ tag }}</span>{% endfor %}</td>
+        </tr>
+        {% endfor %}
+
+        {% for ip, change in diff.changed.items() %}
+        <tr>
+          <td class="text-yellow-400 font-bold">Geändert</td>
+          <td>{{ ip }}</td>
+          <td>{{ change.description.new if change.description else "" }}</td>
+          <td>{{ change.dns_name.new if change.dns_name else "" }}</td>
+          <td>{% if change.tags %}<span class="tag tag-diff"><i class="fa-regular fa-share-from-square"></i> </span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+
+    <script>
+      $(document).ready(function() {
+        $('#diff-table').DataTable({
+          pageLength: 25,
+          lengthChange: false,
+          dom: 'Bfrtip',
+          buttons: ['csv', 'excel'],
+          language: {
+            search: "🔍 Suche: ",
+            paginate: { previous: "←", next: "→" },
+            info: "Zeige _START_ bis _END_ von _TOTAL_ Einträgen",
+            zeroRecords: '<i class="fa-solid fa-xmark"></i> Keine passenden Einträge gefunden',
+            buttons: {
+              csv: '<i class="fas fa-file-csv mr-2"></i> CSV',
+              excel: '<i class="fas fa-file-excel mr-2"></i> Excel'
+            }
+          }
+        });
+      });
+    </script>
+
+    <style>
+      .tag {
+        display: inline-block;
+        color: #fff;
+        padding: 0.2em 0.5em;
+        border-radius: 0.4em;
+        font-size: 0.8em;
+        margin-right: 0.3em;
+      }
+      .tag-firewall { background-color: #e57373; }
+      .tag-mgmt-if  { background-color: #64b5f6; }
+      .tag-vpn      { background-color: #81c784; }
+      .tag-dmz      { background-color: #ffd54f; }
+      .tag-db       { background-color: #ba68c8; }
+      .tag-backup   { background-color: #4dd0e1; }
+      .tag-diff     { background-color: #ff9800; }
+    </style>
+  {% endif %}
+</div>
+
+{% endblock %}

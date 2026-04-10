@@ -5,14 +5,32 @@ import ast
 from datetime import datetime
 from babel.dates import format_datetime as babel_format_datetime
 import os
+import logging
 from dns_cache import load_dns_cache, get_dns_cache_age
 from netbox import get_mgmt_ips
-from config import DB_PATH
+from config import DB_PATH, ACTIVE_THEME, ALLOWED_THEMES, FALLBACK_THEME
 
-app = Flask(__name__)
+
+def resolve_active_theme() -> str:
+    if ACTIVE_THEME in ALLOWED_THEMES:
+        return ACTIVE_THEME
+    logging.warning("Unbekanntes ACTIVE_THEME '%s' - fallback auf '%s'", ACTIVE_THEME, FALLBACK_THEME)
+    return FALLBACK_THEME
+
+
+RESOLVED_THEME = resolve_active_theme()
+app = Flask(__name__, template_folder=f"templates/{RESOLVED_THEME}")
 
 os.environ["LANG"] = "de_DE.UTF-8"
 os.environ["LC_ALL"] = "de_DE.UTF-8"
+
+
+@app.context_processor
+def inject_theme_context():
+    return {
+        "active_theme": RESOLVED_THEME,
+        "active_theme_requested": ACTIVE_THEME,
+    }
 
 # 📦 Alle Snapshot-Daten (für Dropdown)
 def get_snapshot_dates():

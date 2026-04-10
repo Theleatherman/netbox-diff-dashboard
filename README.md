@@ -3,11 +3,15 @@
 Ein schlankes, CI-konformes Dashboard zur täglichen Auswertung von IP-Daten aus der NetBox-API.  
 Visualisiert IP-Zustände, ermöglicht Tag-Filter, Volltextsuche, Differenzvergleiche zwischen Snapshots und bietet ein modernes Webfrontend im Sentinex-Stil.
 
+Seit April 2026 ist die Web-UI als umschaltbares Theme-System aufgebaut: Das neue Standard-Theme `avemo` ist aktiv, das bisherige Design ist als `legacy` archiviert und per Umgebungsvariable sofort reaktivierbar.
+
 ---
 
 ## 📦 Features
 
 - 🔁 **Täglicher Snapshot** aller IP-Adressen aus NetBox mit Beschreibung/DNS/Tags
+- 🎨 **Theme-Umschaltung per `ACTIVE_THEME`** (`avemo` oder `legacy`)
+- 🗂️ **Legacy-Design archiviert** und ohne Codeänderung wieder aktivierbar
 - 🕵️ **Filterung nach Tags** (dynamisch, „mgmt-if“ wird automatisch ausgeblendet)
 - 🔍 **Volltextsuche** über IP, Beschreibung & DNS
 - 📊 **DataTables-Integration** für Sortierung, Pagination & Suche
@@ -49,6 +53,9 @@ netbox-ip-diff-dashboard/
 │
 ├── static/
 │   ├── sentinex.css              # CI-Design / Dark Theme / Logo-Effekt
+│   ├── themes/
+│   │   └── avemo/
+│   │       └── avemo.css         # neues AVEMO-orientiertes Theme
 │   ├── sentinex-s-w.png          # Navigationslogo (weiß)
 │   ├── netbox_logo.svg           # pulsierendes Dashboard-Logo
 │   ├── netbox-light-favicon.png  # Favicon hell
@@ -56,11 +63,24 @@ netbox-ip-diff-dashboard/
 │   └── favicon.png               # Browser-Favicon
 │
 ├── templates/
-│   ├── base.html                 # zentrales Layout + Navigation
-│   ├── home.html                 # Startseite (Dashboard + Links)
-│   ├── index.html                # Snapshot-Ansicht mit Filter
-│   ├── diffs.html                # Änderungsübersicht
-│   ├── snapshots.html            # Tabellenansicht (raw)
+│   ├── avemo/                    # aktives Standard-Theme
+│   │   ├── base.html
+│   │   ├── home.html
+│   │   ├── snapshots.html
+│   │   ├── diffs.html
+│   │   └── dns_diff.html
+│   ├── legacy/                   # archiviertes Alt-Design
+│   │   ├── base.html
+│   │   ├── home.html
+│   │   ├── snapshots.html
+│   │   ├── diffs.html
+│   │   └── dns_diff.html
+│   ├── base.html                 # historisch, nicht aktiv gerendert
+│   ├── home.html                 # historisch, nicht aktiv gerendert
+│   ├── index.html                # historisch
+│   ├── diffs.html                # historisch, nicht aktiv gerendert
+│   ├── snapshots.html            # historisch, nicht aktiv gerendert
+│   ├── dns_diff.html             # historisch, nicht aktiv gerendert
 │   ├── template.html             # HTML-Vorlage für E-Mail
 │   └── test-mail.py              # Mailversandtest (Debug)
 │
@@ -139,6 +159,26 @@ Optional Port angeben:
 python3 app.py --port 8080
 ```
 
+### Theme auswählen
+
+Standard ist `avemo`. Für Rollback auf das archivierte UI kann `legacy` gesetzt werden.
+
+Linux/macOS:
+
+```bash
+ACTIVE_THEME=avemo python3 app.py
+ACTIVE_THEME=legacy python3 app.py
+```
+
+Windows PowerShell:
+
+```powershell
+$env:ACTIVE_THEME = "avemo"; python app.py
+$env:ACTIVE_THEME = "legacy"; python app.py
+```
+
+Bei ungültigem Theme-Wert fällt die App automatisch auf `legacy` zurück.
+
 ---
 
 ## 🔁 systemd + Cron Integration
@@ -203,7 +243,12 @@ sudo systemctl enable --now netbox-dashboard.service
 
 ## 🎨 Anpassbar per CSS
 
-Bearbeite `static/sentinex.css` für:
+Bearbeite je nach aktivem Theme:
+
+- `static/themes/avemo/avemo.css` für das neue Standard-Design
+- `static/sentinex.css` für das archivierte Legacy-Design
+
+Typische Anpassungen:
 
 - Farben (z. B. `.tag` für Badge-Style)
 - Schriftgrößen, Fonts, Hovereffekte

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section-head">
+  <h2><i class="fa-solid fa-globe"></i>DNS und NetBox Abgleich</h2>
+  <p>Prüft Unterschiede zwischen den in NetBox gepflegten Hostnamen und dem DNS-Cache.</p>
+</section>
+
+<section class="content-card">
+  {% if error %}
+    <div class="notice notice-error"><strong>Fehler:</strong> {{ error }}</div>
+  {% endif %}
+
+  {% if cache_age %}
+    <p class="hint">DNS-Daten zuletzt aktualisiert am: {{ cache_age }}</p>
+  {% endif %}
+
+  <div class="table-wrap">
+    <table id="dns-diff-table" class="display avemo-table">
+      <thead>
+        <tr>
+          <th>IP</th>
+          <th>Hostname (NetBox)</th>
+          <th>Hostname (DNS)</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for ip, hostname in diff.only_in_netbox.items() %}
+        <tr>
+          <td>{{ ip }}</td>
+          <td>{{ hostname }}</td>
+          <td></td>
+          <td><span class="status-pill status-netbox">Nur NetBox</span></td>
+        </tr>
+      {% endfor %}
+
+      {% for ip, hostname in diff.only_in_dns.items() %}
+        <tr>
+          <td>{{ ip }}</td>
+          <td></td>
+          <td>{{ hostname }}</td>
+          <td><span class="status-pill status-dns">Nur DNS</span></td>
+        </tr>
+      {% endfor %}
+
+      {% for mismatch in diff.hostname_mismatches %}
+        <tr>
+          <td>{{ mismatch[0] }}</td>
+          <td>{{ mismatch[1] }}</td>
+          <td>{{ mismatch[2] }}</td>
+          <td><span class="status-pill status-mismatch">Hostname Mismatch</span></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<script>
+$(document).ready(function() {
+  $('#dns-diff-table').DataTable({
+    pageLength: 25,
+    dom: 'Bfrtip',
+    buttons: ['csv', 'excel'],
+    columnDefs: [
+      { type: 'ip-address', targets: 0 }
+    ],
+    language: {
+      search: "Suche:",
+      paginate: { previous: "Zurück", next: "Weiter" },
+      info: "Zeige _START_ bis _END_ von _TOTAL_ Einträgen",
+      zeroRecords: "Keine passenden Einträge gefunden"
+    }
+  });
+});
+</script>
+{% endblock %}

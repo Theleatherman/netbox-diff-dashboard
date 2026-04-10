@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section-head">
+  <h2><i class="fa-solid fa-circle-nodes"></i>NetBox Snapshot vom {{ readable_date }}</h2>
+  <p>Alle verwalteten IP-Adressen im aktuellen Snapshot. Per Tag filtern und als Datei exportieren.</p>
+</section>
+
+<section class="content-card">
+  <div class="toolbar">
+    <label for="tagFilter"><i class="fa-solid fa-tags"></i>Tag-Filter</label>
+    <select id="tagFilter">
+      <option value="">Alle</option>
+      {% for tag in (data | map(attribute=3) | sum(start=[]) | unique | sort) %}
+        <option value="{{ tag }}">{{ tag }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="table-wrap">
+    <table id="snapshot-table" class="display avemo-table">
+      <thead>
+        <tr>
+          <th>IP</th>
+          <th>Beschreibung</th>
+          <th>DNS</th>
+          <th>Tags</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ip, desc, dns, tags in data %}
+        <tr>
+          <td>{{ ip }}</td>
+          <td>{{ desc }}</td>
+          <td>{{ dns }}</td>
+          <td>
+            {% for tag in tags %}
+              <span class="tag tag-{{ tag | lower }}">{{ tag }}</span>
+            {% endfor %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<script>
+$(document).ready(function () {
+  const table = $('#snapshot-table').DataTable({
+    pageLength: 25,
+    dom: 'Bfrtip',
+    buttons: ['csv', 'excel'],
+    language: {
+      search: "Suche:",
+      paginate: { previous: "Zurück", next: "Weiter" },
+      info: "Zeige _START_ bis _END_ von _TOTAL_ Einträgen",
+      zeroRecords: "Keine passenden Einträge gefunden"
+    }
+  });
+
+  $('#tagFilter').on('change', function () {
+    const val = $.fn.dataTable.util.escapeRegex($(this).val());
+    table.column(3).search(val ? val : '', true, false).draw();
+  });
+});
+</script>
+{% endblock %}

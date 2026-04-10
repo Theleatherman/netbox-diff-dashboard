@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section-head">
+  <h2><i class="fa-solid fa-code-compare"></i>Änderungen vom {{ readable_date }}</h2>
+  <p>Alle hinzugefügten, entfernten oder geänderten Datensätze zwischen den letzten Snapshots.</p>
+</section>
+
+<section class="content-card">
+  {% if not diff %}
+    <div class="notice notice-success"><i class="fa-solid fa-circle-check"></i>Keine Änderungen seit dem letzten Snapshot.</div>
+  {% else %}
+    <div class="table-wrap">
+      <table id="diff-table" class="display avemo-table">
+        <thead>
+          <tr>
+            <th>Typ</th>
+            <th>IP</th>
+            <th>Beschreibung</th>
+            <th>DNS</th>
+            <th>Tags</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ip, desc, dns, tags in diff.added %}
+          <tr>
+            <td><span class="status-pill status-add">Hinzugefügt</span></td>
+            <td>{{ ip }}</td>
+            <td>{{ desc }}</td>
+            <td>{{ dns }}</td>
+            <td>{% for tag in tags %}<span class="tag tag-{{ tag | lower }}">{{ tag }}</span>{% endfor %}</td>
+          </tr>
+          {% endfor %}
+
+          {% for ip, desc, dns, tags in diff.removed %}
+          <tr>
+            <td><span class="status-pill status-remove">Entfernt</span></td>
+            <td>{{ ip }}</td>
+            <td>{{ desc }}</td>
+            <td>{{ dns }}</td>
+            <td>{% for tag in tags %}<span class="tag tag-{{ tag | lower }}">{{ tag }}</span>{% endfor %}</td>
+          </tr>
+          {% endfor %}
+
+          {% for ip, change in diff.changed.items() %}
+          <tr>
+            <td><span class="status-pill status-change">Geändert</span></td>
+            <td>{{ ip }}</td>
+            <td>{{ change.description.new if change.description else "" }}</td>
+            <td>{{ change.dns_name.new if change.dns_name else "" }}</td>
+            <td>{% if change.tags %}<span class="tag tag-diff">Tag-Update</span>{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</section>
+
+<script>
+$(document).ready(function() {
+  $('#diff-table').DataTable({
+    pageLength: 25,
+    lengthChange: false,
+    dom: 'Bfrtip',
+    buttons: ['csv', 'excel'],
+    language: {
+      search: "Suche:",
+      paginate: { previous: "Zurück", next: "Weiter" },
+      info: "Zeige _START_ bis _END_ von _TOTAL_ Einträgen",
+      zeroRecords: "Keine passenden Einträge gefunden"
+    }
+  });
+});
+</script>
+{% endblock %}

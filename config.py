@@ -16,3 +16,9 @@ DNS_SERVER = os.getenv("DNS_SERVER")
 DNS_HOSTNAME = os.getenv("DNS_HOSTNAME")
 CERT_PEM = os.getenv("CERT_PEM")
 CERT_KEY_PEM = os.getenv("CERT_KEY_PEM")
+
+# Theme switching for web UI.
+ALLOWED_THEMES = {"avemo", "legacy"}
+DEFAULT_THEME = "avemo"
+FALLBACK_THEME = "legacy"
+ACTIVE_THEME = os.getenv("ACTIVE_THEME", DEFAULT_THEME).strip().lower()
