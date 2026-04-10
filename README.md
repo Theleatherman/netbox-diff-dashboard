@@ -18,6 +18,7 @@ Seit April 2026 ist die Web-UI als umschaltbares Theme-System aufgebaut: Das neu
 - 📤 **CSV- und Excel-Export** über Button
 - 🧠 Automatische **Diff-Berechnung zwischen Snapshots** (inkl. farblich differenzierter Tabellen)
 - 💌 **HTML-E-Mail-Benachrichtigung** bei Änderungen (inkl. `emailer.py`)
+- 💬 **Microsoft Teams-Benachrichtigung** bei Änderungen via Incoming Webhook (inkl. `teams_notifier.py`)
 - 📅 **Snapshot-Cleanup-Script** (`clean_bad_snapshots.py`)
 - 🧭 Navigation mit aktiver Seitenmarkierung und **Font Awesome Icons**
 - ✨ Hover-basierter, leicht pulsierender Effekt am **NetBox-Logo**
@@ -40,6 +41,7 @@ netbox-ip-diff-dashboard/
 ├── daily.py                      # täglicher Snapshot + Diff-Bildung + E-Mail
 ├── netbox.py                     # NetBox-API-Abfrage (authentifiziert, gefiltert)
 ├── emailer.py                    # HTML-Mail-Renderer für Diff-Benachrichtigung
+├── teams_notifier.py             # Teams-Benachrichtigung via Incoming Webhook
 ├── config.py                     # zentrale Konfig (u. a. SMTP)
 ├── diffing.py                    # Kernlogik zum Vergleich der Snapshots
 ├── db.py                         # DB-Hilfsfunktionen
@@ -427,7 +429,7 @@ sudo systemctl enable --now oauth2-proxy.service
 - [x] Auth (Basic Auth oder OIDC)
 - [ ] API-Endpoint zur Snapshot-Abfrage
 - [ ] Monitoring-Integration (Prometheus)
-- [ ] Slack/Teams-Benachrichtigung bei Änderungen
+- [x] Slack/Teams-Benachrichtigung bei Änderungen
 - [ ] Light/Dark-Mode Toggle
 
 ---
