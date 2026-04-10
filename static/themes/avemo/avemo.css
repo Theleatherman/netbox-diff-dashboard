@@ -71,15 +71,17 @@ body {
   width: 64px;
   height: 64px;
   border-radius: 14px;
-  background: #ffffff;
+  background: #111923;
+  border: 1px solid rgba(255, 255, 255, 0.22);
   display: grid;
   place-items: center;
   box-shadow: 0 8px 26px rgba(0, 0, 0, 0.24);
 }
 
 .brand-logo img {
-  width: 38px;
-  height: 38px;
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
 }
 
 .brand-kicker {
@@ -320,19 +322,20 @@ input,
 table.dataTable.avemo-table {
   width: 100% !important;
   border-collapse: collapse;
+  border: 1px solid var(--line);
 }
 
 table.dataTable.avemo-table thead th {
   background: var(--ink);
   color: #fff;
-  border-bottom: none;
+  border: 1px solid #24384f;
   padding: 0.78rem;
   font-weight: 700;
 }
 
 table.dataTable.avemo-table tbody td {
   padding: 0.68rem;
-  border-bottom: 1px solid #e6eaf0;
+  border: 1px solid #e6eaf0;
 }
 
 table.dataTable.avemo-table tbody tr:hover {
