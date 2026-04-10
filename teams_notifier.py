@@ -5,17 +5,16 @@ Uses the Adaptive-Card format supported by the Teams Workflows connector
 A single webhook URL is all that is required; set TEAMS_WEBHOOK_URL in .env.
 """
 
-import json
 import os
 
 import requests
 from dotenv import load_dotenv
 
+from config import TEAMS_WEBHOOK_URL
+
 load_dotenv()
 
-TEAMS_WEBHOOK_URL = os.getenv("TEAMS_WEBHOOK_URL")
-
-_DASHBOARD_URL = "https://netbox-diff.avemo-group.net/"
+_DASHBOARD_URL = os.getenv("DASHBOARD_URL", "https://netbox-diff.avemo-group.net/")
 
 
 def _fmt(value):
@@ -171,8 +170,7 @@ def send_teams_notification(subject, diff, last_formatted=None, now_formatted=No
     try:
         response = requests.post(
             webhook_url,
-            data=json.dumps(payload),
-            headers={"Content-Type": "application/json"},
+            json=payload,
             timeout=15,
         )
         response.raise_for_status()

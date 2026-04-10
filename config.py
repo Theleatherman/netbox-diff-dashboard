@@ -17,6 +17,7 @@ DNS_HOSTNAME = os.getenv("DNS_HOSTNAME")
 CERT_PEM = os.getenv("CERT_PEM")
 CERT_KEY_PEM = os.getenv("CERT_KEY_PEM")
 TEAMS_WEBHOOK_URL = os.getenv("TEAMS_WEBHOOK_URL")
+DASHBOARD_URL = os.getenv("DASHBOARD_URL", "https://netbox-diff.avemo-group.net/")
 
 # Theme switching for web UI.
 ALLOWED_THEMES = {"avemo", "legacy"}
