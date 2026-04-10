@@ -5,25 +5,33 @@ import json
 from tabulate import tabulate
 from config import DB_PATH
 
+
 def list_snapshots():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute("SELECT DISTINCT snapshot_date FROM ip_records ORDER BY snapshot_date DESC")
+    c.execute(
+        "SELECT DISTINCT snapshot_date FROM ip_records ORDER BY snapshot_date DESC"
+    )
     for r in c.fetchall():
         print(r[0])
     conn.close()
 
+
 def show_snapshot(date):
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute("""
+    c.execute(
+        """
         SELECT ip, description, dns_name, tags
         FROM ip_records
         WHERE snapshot_date = ?
-    """, (date,))
+    """,
+        (date,),
+    )
     rows = c.fetchall()
     print(tabulate(rows, headers=["IP", "Description", "DNS", "Tags"]))
     conn.close()
+
 
 def show_diff(date):
     conn = sqlite3.connect(DB_PATH)
@@ -37,9 +45,12 @@ def show_diff(date):
         print("Kein Diff für dieses Datum gefunden.")
     conn.close()
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="NetBox CLI Viewer")
-    parser.add_argument("--list", action="store_true", help="Alle Snapshot-Daten anzeigen")
+    parser.add_argument(
+        "--list", action="store_true", help="Alle Snapshot-Daten anzeigen"
+    )
     parser.add_argument("--snapshot", type=str, help="Snapshot-Datum anzeigen")
     parser.add_argument("--diff", type=str, help="Diff für Datum anzeigen")
     args = parser.parse_args()

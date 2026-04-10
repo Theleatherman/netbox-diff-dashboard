@@ -3,13 +3,11 @@ from config import NETBOX_API_URL, NETBOX_API_TOKEN
 
 HEADERS = {"Authorization": f"Token {NETBOX_API_TOKEN}"} if NETBOX_API_TOKEN else {}
 
+
 def get_ips(tag_slug_filter=None):
     result = []
     base_url = NETBOX_API_URL
-    params = {
-        "limit": 1000,
-        "fields": "address,dns_name,description,tags"
-    }
+    params = {"limit": 1000, "fields": "address,dns_name,description,tags"}
     url = base_url
     while url:
         print(f"Abfrage: {url}")

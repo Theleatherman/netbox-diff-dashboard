@@ -5,6 +5,7 @@ DNS_SERVER = "10.1.0.2"
 CERT_PEM = "/etc/ssl/client_cert.pem"
 CERT_KEY = "/etc/ssl/client_key.pem"
 
+
 def run_cert_auth_winrm_check() -> int:
     """Manual connectivity helper for certificate-authenticated WinRM."""
     try:

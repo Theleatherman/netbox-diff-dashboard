@@ -8,22 +8,24 @@ from emailer import send_email, format_datetime, render_diff_html, render_diff_p
 import ast
 from config import DB_PATH
 
+
 def normalize(data):
     normalized = []
     for ip, desc, dns, tags in data:
-        normalized.append((
-            ip.strip(),
-            (desc or "").strip(),
-            (dns or "").strip(),
-            tuple(sorted(tags))
-        ))
+        normalized.append(
+            (ip.strip(), (desc or "").strip(), (dns or "").strip(), tuple(sorted(tags)))
+        )
     return sorted(normalized)
+
 
 def get_last_snapshot(conn):
     c = conn.cursor()
-    c.execute("SELECT DISTINCT snapshot_date FROM ip_records ORDER BY snapshot_date DESC LIMIT 1")
+    c.execute(
+        "SELECT DISTINCT snapshot_date FROM ip_records ORDER BY snapshot_date DESC LIMIT 1"
+    )
     row = c.fetchone()
     return row[0] if row else None
+
 
 def safe_parse_tags(raw):
     if not raw:
@@ -36,9 +38,13 @@ def safe_parse_tags(raw):
         except Exception:
             return []
 
+
 def get_snapshot_data(conn, date):
     c = conn.cursor()
-    c.execute("SELECT ip, description, dns_name, tags FROM ip_records WHERE snapshot_date = ?", (date,))
+    c.execute(
+        "SELECT ip, description, dns_name, tags FROM ip_records WHERE snapshot_date = ?",
+        (date,),
+    )
     rows = c.fetchall()
     parsed = []
     for ip, desc, dns, tags in rows:
@@ -46,14 +52,19 @@ def get_snapshot_data(conn, date):
         parsed.append((ip, desc, dns, tag_list))
     return parsed
 
+
 def store_snapshot(conn, snapshot_date, data):
     c = conn.cursor()
     for ip, desc, dns, tags in data:
-        c.execute("""
+        c.execute(
+            """
             INSERT INTO ip_records (snapshot_date, ip, description, dns_name, tags)
             VALUES (?, ?, ?, ?, ?)
-        """, (snapshot_date, ip, desc, dns, json.dumps(tags)))
+        """,
+            (snapshot_date, ip, desc, dns, json.dumps(tags)),
+        )
     conn.commit()
+
 
 def build_diff(previous, current):
     # Index nach IP
@@ -65,9 +76,9 @@ def build_diff(previous, current):
     common_ips = set(curr_map.keys()) & set(prev_map.keys())
 
     diff = {
-        "added": [ [ip, *curr_map[ip]] for ip in added_ips ],
-        "removed": [ [ip, *prev_map[ip]] for ip in removed_ips ],
-        "changed": {}
+        "added": [[ip, *curr_map[ip]] for ip in added_ips],
+        "removed": [[ip, *prev_map[ip]] for ip in removed_ips],
+        "changed": {},
     }
 
     for ip in common_ips:
@@ -87,10 +98,15 @@ def build_diff(previous, current):
 
     return diff
 
+
 def store_diff(conn, date, diff):
     c = conn.cursor()
-    c.execute("INSERT INTO ip_diffs (compare_date, diff_json) VALUES (?, ?)", (date, json.dumps(diff, indent=2)))
+    c.execute(
+        "INSERT INTO ip_diffs (compare_date, diff_json) VALUES (?, ?)",
+        (date, json.dumps(diff, indent=2)),
+    )
     conn.commit()
+
 
 def is_valid_ip(ip):
     if not isinstance(ip, str):
@@ -104,6 +120,7 @@ def is_valid_ip(ip):
         return True
     except ValueError:
         return False
+
 
 def validate_snapshot(data):
     if not isinstance(data, list):
@@ -124,6 +141,7 @@ def validate_snapshot(data):
             print(f"❌ Ungültige IP in Zeile {i}: {entry[0]}")
             return False
     return True
+
 
 def main():
     now = datetime.now().isoformat()
@@ -171,6 +189,7 @@ def main():
         </html>
         """
         send_email(subject, body_plain, body_html)
+
 
 if __name__ == "__main__":
     main()

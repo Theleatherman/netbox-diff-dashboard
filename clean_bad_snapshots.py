@@ -1,19 +1,27 @@
 import sqlite3
 from config import DB_PATH
 
+
 def is_valid_ip(ip):
     return isinstance(ip, str) and ip.count(".") == 3 and "/" in ip
 
+
 def load_snapshot(conn, snapshot_date):
     c = conn.cursor()
-    c.execute("SELECT ip, description, dns_name, tags FROM ip_records WHERE snapshot_date = ?", (snapshot_date,))
+    c.execute(
+        "SELECT ip, description, dns_name, tags FROM ip_records WHERE snapshot_date = ?",
+        (snapshot_date,),
+    )
     return c.fetchall()
+
 
 def clean_snapshots():
     conn = sqlite3.connect(DB_PATH, timeout=10)
     c = conn.cursor()
 
-    c.execute("SELECT DISTINCT snapshot_date FROM ip_records ORDER BY snapshot_date DESC")
+    c.execute(
+        "SELECT DISTINCT snapshot_date FROM ip_records ORDER BY snapshot_date DESC"
+    )
     dates = [r[0] for r in c.fetchall()]
     removed = []
 
@@ -38,6 +46,7 @@ def clean_snapshots():
             print(f" - {ts}")
     else:
         print("✅ Keine fehlerhaften Snapshots gefunden.")
+
 
 if __name__ == "__main__":
     clean_snapshots()

@@ -16,6 +16,7 @@ SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 EMAIL_FROM = os.getenv("EMAIL_FROM")
 EMAIL_TO = os.getenv("EMAIL_TO")
 
+
 def send_email(subject, plain_body, html_body=None):
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
@@ -39,10 +40,13 @@ def send_email(subject, plain_body, html_body=None):
     except Exception as e:
         print(f"❌ Fehler beim Senden der E-Mail: {e}")
 
+
 def format_datetime(iso_str):
     try:
         dt = datetime.fromisoformat(iso_str)
-        return babel_format_datetime(dt, format="d. MMMM yyyy, HH:mm 'Uhr'", locale="de")
+        return babel_format_datetime(
+            dt, format="d. MMMM yyyy, HH:mm 'Uhr'", locale="de"
+        )
     except Exception:
         return iso_str  # Fallback bei Fehler
 
@@ -63,10 +67,12 @@ def render_diff_plain(diff, last_formatted=None, now_formatted=None):
 
     if last_formatted and now_formatted:
         lines.append(f"Zeitraum: {last_formatted} bis {now_formatted}")
-    lines.extend([
-        f"Uebersicht: {len(added)} hinzugefuegt, {len(removed)} entfernt, {change_rows} Feldaenderungen auf {len(changed)} IPs.",
-        "",
-    ])
+    lines.extend(
+        [
+            f"Uebersicht: {len(added)} hinzugefuegt, {len(removed)} entfernt, {change_rows} Feldaenderungen auf {len(changed)} IPs.",
+            "",
+        ]
+    )
 
     if added:
         lines.append("== Hinzugefuegt ==")
@@ -100,7 +106,8 @@ def render_diff_plain(diff, last_formatted=None, now_formatted=None):
 
     lines.append("Weitere Informationen: https://netbox-diff.avemo-group.net/")
     return "\n".join(lines)
-    
+
+
 def render_diff_html(diff):
     year = datetime.now().year
     added = diff.get("added", [])
@@ -169,7 +176,7 @@ def render_diff_html(diff):
     if not any([added, removed, changed]):
         html += "<p style='color:#ccc;'>Keine Änderungen.</p>"
 
-    html += f"""
+    html += """
       <p>Weitere Informationen unter: <a href="https://netbox-diff.avemo-group.net/">https://netbox-diff.avemo-group.net/</a></p>
     """
 

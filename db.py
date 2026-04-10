@@ -18,21 +18,33 @@ def parse_tags(raw):
         except (SyntaxError, ValueError):
             return []
 
+
 def init_db():
     with sqlite3.connect(DB_PATH, timeout=10) as conn:
         c = conn.cursor()
         c.executescript(open("schema.sql").read())
         conn.commit()
 
+
 def store_snapshot(ips, timestamp):
     with sqlite3.connect(DB_PATH, timeout=10) as conn:
         c = conn.cursor()
         for ip in ips:
-            c.execute("""
+            c.execute(
+                """
                 INSERT INTO ip_records (snapshot_date, ip, description, dns_name, tags)
                 VALUES (?, ?, ?, ?, ?)
-            """, (timestamp, ip["address"], ip["description"], ip["dns_name"], json.dumps(ip["tags"])))
+            """,
+                (
+                    timestamp,
+                    ip["address"],
+                    ip["description"],
+                    ip["dns_name"],
+                    json.dumps(ip["tags"]),
+                ),
+            )
         conn.commit()
+
 
 def load_latest_snapshot():
     with sqlite3.connect(DB_PATH, timeout=10) as conn:
@@ -43,12 +55,21 @@ def load_latest_snapshot():
         """)
         rows = c.fetchall()
     return [
-        {"address": r[0], "description": r[1], "dns_name": r[2], "tags": parse_tags(r[3])}
+        {
+            "address": r[0],
+            "description": r[1],
+            "dns_name": r[2],
+            "tags": parse_tags(r[3]),
+        }
         for r in rows
     ]
+
 
 def store_diff(diff_json, timestamp):
     with sqlite3.connect(DB_PATH, timeout=10) as conn:
         c = conn.cursor()
-        c.execute("INSERT INTO ip_diffs (compare_date, diff_json) VALUES (?, ?)", (timestamp, diff_json))
+        c.execute(
+            "INSERT INTO ip_diffs (compare_date, diff_json) VALUES (?, ?)",
+            (timestamp, diff_json),
+        )
         conn.commit()

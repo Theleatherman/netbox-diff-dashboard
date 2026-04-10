@@ -1,8 +1,9 @@
 import winrm
 
 from config import DNS_SERVER, CERT_PEM, CERT_KEY_PEM
-from dns_cache import load_dns_cache, get_dns_cache_age
+from dns_cache import load_dns_cache
 from netbox import get_mgmt_ips  # ← wichtig: deine Funktion, die list[tuple] zurückgibt
+
 
 def get_dns_records_via_winrm():
     session = winrm.Session(
@@ -11,7 +12,7 @@ def get_dns_records_via_winrm():
         transport="certificate",
         cert_pem=CERT_PEM,
         cert_key_pem=CERT_KEY_PEM,
-        server_cert_validation="ignore"
+        server_cert_validation="ignore",
     )
 
     ps_script = """
@@ -43,6 +44,7 @@ def get_dns_records_via_winrm():
 
     return ip_hostname_map
 
+
 def get_ip_hostname_diff():
     netbox_map = {
         ip.split("/")[0]: dns
@@ -51,17 +53,9 @@ def get_ip_hostname_diff():
     }
     dns_map = load_dns_cache()
 
-    only_in_netbox = {
-        ip: netbox_map[ip]
-        for ip in netbox_map
-        if ip not in dns_map
-    }
+    only_in_netbox = {ip: netbox_map[ip] for ip in netbox_map if ip not in dns_map}
 
-    only_in_dns = {
-        ip: dns_map[ip]
-        for ip in dns_map
-        if ip not in netbox_map
-    }
+    only_in_dns = {ip: dns_map[ip] for ip in dns_map if ip not in netbox_map}
 
     in_both = []
     hostname_mismatches = []
@@ -74,7 +68,8 @@ def get_ip_hostname_diff():
             if (
                 isinstance(netbox_host, str)
                 and isinstance(dns_host, str)
-                and netbox_host and dns_host
+                and netbox_host
+                and dns_host
                 and netbox_host.lower() != dns_host.lower()
             ):
                 hostname_mismatches.append((ip, netbox_host, dns_host))
@@ -83,5 +78,5 @@ def get_ip_hostname_diff():
         "only_in_netbox": only_in_netbox,
         "only_in_dns": only_in_dns,
         "both": in_both,
-        "hostname_mismatches": hostname_mismatches
+        "hostname_mismatches": hostname_mismatches,
     }
