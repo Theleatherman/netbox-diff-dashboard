@@ -163,7 +163,9 @@ def send_teams_notification(subject, diff, last_formatted=None, now_formatted=No
     """Send a Teams notification for a diff.  Silently skipped when no webhook URL is set."""
     webhook_url = TEAMS_WEBHOOK_URL
     if not webhook_url:
-        print("ℹ️  TEAMS_WEBHOOK_URL nicht gesetzt – Teams-Benachrichtigung übersprungen.")
+        print(
+            "ℹ️  TEAMS_WEBHOOK_URL nicht gesetzt – Teams-Benachrichtigung übersprungen."
+        )
         return
 
     payload = build_adaptive_card(subject, diff, last_formatted, now_formatted)
