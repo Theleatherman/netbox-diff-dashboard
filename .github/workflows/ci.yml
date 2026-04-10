@@ -7,7 +7,23 @@ on:
       - master
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
+  workflow-yaml-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: python -m pip install yamllint
+
+      - name: Lint GitHub Actions workflows
+        run: yamllint .github/workflows
+
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -44,3 +60,17 @@ jobs:
 
       - name: Run tests
         run: pytest -q
+
+      - name: Vulnerability audit (pip-audit)
+        if: matrix.python-version == '3.12'
+        run: |
+          python -m pip install pip-audit
+          pip-audit --strict
+
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
