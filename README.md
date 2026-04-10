@@ -435,5 +435,5 @@ sudo systemctl enable --now oauth2-proxy.service
 ## 🧑‍💻 Entwickelt von
 
 **Felix Cos** – Senior Network Engineer  
-mit ❤️ bei **sentinex GmbH**  
+mit ❤️ bei **AVEMO IT GmbH**  
 → „Built by The Leatherman.“
